@@ -24,10 +24,10 @@ protected:
 	virtual void SetupInputComponent() override;
 
 private:
-	UPROPERTY(EditAnywhere, Category = "Input", DisplayName = "AuraContext")
-	TObjectPtr<UInputMappingContext> m_AuraContext;
-	UPROPERTY(EditAnywhere, Category = "Input", DisplayName = "MoveAction")
-	TObjectPtr<UInputAction> m_MoveAction;
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputMappingContext> AuraContext;
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> MoveAction;
 
 	// 声明类型，也可以写在前面
 	void Move(const struct FInputActionValue& InputActionValue);

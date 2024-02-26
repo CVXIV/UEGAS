@@ -7,6 +7,8 @@
 
 AAuraPlayerController::AAuraPlayerController() {
 	bReplicates = true;
+	LastActor = nullptr;
+	ThisActor = nullptr;
 }
 
 void AAuraPlayerController::PlayerTick(float DeltaTime) {
@@ -41,12 +43,12 @@ void AAuraPlayerController::CursorTrace() {
 
 void AAuraPlayerController::BeginPlay() {
 	Super::BeginPlay();
-	check(m_AuraContext)
-	check(m_MoveAction)
+	check(AuraContext)
+	check(MoveAction)
 
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 	check(Subsystem)
-	Subsystem->AddMappingContext(m_AuraContext, 0);
+	Subsystem->AddMappingContext(AuraContext, 0);
 
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
@@ -61,7 +63,7 @@ void AAuraPlayerController::SetupInputComponent() {
 	Super::SetupInputComponent();
 
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
-	EnhancedInputComponent->BindAction(m_MoveAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move);
+	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move);
 }
 
 void AAuraPlayerController::Move(const struct FInputActionValue& InputActionValue) {
