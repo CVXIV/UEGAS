@@ -6,6 +6,8 @@
 #include "UI/WidgetController/AuraWidgetController.h"
 #include "OverlayWidgetController.generated.h"
 
+class UAuraAttributeSet;
+
 // 以F开头
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChangedSignature, float, NewHealth);
 
@@ -37,6 +39,11 @@ public:
 	FOnMaxManaChangedSignature OnMaxManaChanged;
 
 protected:
+	virtual void InitWidgetController() override;
+
+	UPROPERTY()
+	TObjectPtr<UAuraAttributeSet> AuraAttributeSet;
+
 	void HealthChanged(const FOnAttributeChangeData& Data) const;
 
 	void MaxHealthChanged(const FOnAttributeChangeData& Data) const;
