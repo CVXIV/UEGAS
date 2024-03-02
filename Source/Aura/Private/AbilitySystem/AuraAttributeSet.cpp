@@ -3,6 +3,8 @@
 
 #include "AbilitySystem/AuraAttributeSet.h"
 
+#include "GameplayEffectExtension.h"
+#include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
 
 UAuraAttributeSet::UAuraAttributeSet() {
@@ -22,6 +24,27 @@ void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, MaxMana, COND_None, REPNOTIFY_Always)
 }
 
+void UAuraAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) {
+	Super::PreAttributeChange(Attribute, NewValue);
+
+	if (Attribute == GetHealthAttribute()) {
+		NewValue = FMath::Clamp(NewValue, 0, GetMaxHealth());
+	} else if (Attribute == GetMaxHealthAttribute()) {
+		NewValue = FMath::Max(NewValue, 0);
+	} else if (Attribute == GetManaAttribute()) {
+		NewValue = FMath::Clamp(NewValue, 0, GetMaxMana());
+	} else if (Attribute == GetMaxManaAttribute()) {
+		NewValue = FMath::Max(NewValue, 0);
+	}
+}
+
+void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) {
+	Super::PostGameplayEffectExecute(Data);
+
+	FEffectProperties EffectProperties;
+	SetEffectProperties(Data, EffectProperties);
+}
+
 void UAuraAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth) const {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, Health, OldHealth)
 }
@@ -36,4 +59,27 @@ void UAuraAttributeSet::OnRep_Mana(const FGameplayAttributeData& OldMana) const 
 
 void UAuraAttributeSet::OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana) const {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, MaxMana, OldMaxMana)
+}
+
+void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) {
+	Props.EffectContextHandle = Data.EffectSpec.GetContext();
+	Props.SourceAsc = Props.EffectContextHandle.GetOriginalInstigatorAbilitySystemComponent();
+	if (IsValid(Props.SourceAsc) && Props.SourceAsc->AbilityActorInfo.IsValid() && Props.SourceAsc->AbilityActorInfo->AvatarActor.IsValid()) {
+		Props.SourceAvatarActor = Props.SourceAsc->AbilityActorInfo->AvatarActor.Get();
+		Props.SourceController = Props.SourceAsc->AbilityActorInfo->PlayerController.Get();
+		if (!Props.SourceController && Props.SourceAvatarActor) {
+			if (const APawn* Pawn = Cast<APawn>(Props.SourceAvatarActor)) {
+				Props.SourceController = Pawn->GetController();
+			}
+		}
+		if (Props.SourceController) {
+			Props.SourceCharacter = Props.SourceController->GetCharacter();
+		}
+	}
+	if (Data.Target.AbilityActorInfo.IsValid() && Data.Target.AbilityActorInfo->AvatarActor.IsValid()) {
+		Props.TargetAvatarActor = Data.Target.AbilityActorInfo->AvatarActor.Get();
+		Props.TargetController = Data.Target.AbilityActorInfo->PlayerController.Get();
+		Props.TargetAsc = Data.Target.AbilityActorInfo->AbilitySystemComponent.Get();
+		Props.TargetCharacter = Cast<ACharacter>(Props.TargetAvatarActor);
+	}
 }

@@ -12,4 +12,14 @@
 UCLASS()
 class AURA_API UAuraAbilitySystemComponent : public UAbilitySystemComponent {
 	GENERATED_BODY()
+
+public:
+	[[nodiscard]] TMap<TSubclassOf<UGameplayEffect>, int32>& GetGameplayEffectDenyCount();
+
+	[[nodiscard]] TMap<TSubclassOf<UGameplayEffect>, TSharedPtr<TQueue<FActiveGameplayEffectHandle>>>& GetGameplayEffectHandle();
+
+private:
+	TMap<TSubclassOf<UGameplayEffect>, int32> GameplayEffectDenyCount;
+
+	TMap<TSubclassOf<UGameplayEffect>, TSharedPtr<TQueue<FActiveGameplayEffectHandle>>> GameplayEffectHandle;
 };
