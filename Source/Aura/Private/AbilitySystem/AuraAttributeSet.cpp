@@ -24,6 +24,8 @@ void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, MaxMana, COND_None, REPNOTIFY_Always)
 }
 
+// PreAttributeChange的参数NewValue就是这个不受约束的BaseValue，然后如果每次修改NewValue引用，其实最后就是修改CurrentValue，但本质的BaseValue没有修改
+// 例如还有其他GE，它的modifier查询的结果仍然是未经Clamp的值（BaseValue），所以需要进行Set，例如SetHealth，此类方法其实修改的是BaseValue
 void UAuraAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) {
 	Super::PreAttributeChange(Attribute, NewValue);
 
@@ -31,10 +33,12 @@ void UAuraAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, 
 		NewValue = FMath::Clamp(NewValue, 0, GetMaxHealth());
 	} else if (Attribute == GetMaxHealthAttribute()) {
 		NewValue = FMath::Max(NewValue, 0);
+		SetHealth(FMath::Min(NewValue, GetHealth()));
 	} else if (Attribute == GetManaAttribute()) {
 		NewValue = FMath::Clamp(NewValue, 0, GetMaxMana());
 	} else if (Attribute == GetMaxManaAttribute()) {
 		NewValue = FMath::Max(NewValue, 0);
+		SetMana(FMath::Min(NewValue, GetMana()));
 	}
 }
 
@@ -43,6 +47,12 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 
 	FEffectProperties EffectProperties;
 	SetEffectProperties(Data, EffectProperties);
+
+	if (Data.EvaluatedData.Attribute == GetHealthAttribute()) {
+		SetHealth(FMath::Clamp(GetHealth(), 0.f, GetMaxHealth()));
+	} else if (Data.EvaluatedData.Attribute == GetManaAttribute()) {
+		SetMana(FMath::Clamp(GetMana(), 0.f, GetMaxMana()));
+	}
 }
 
 void UAuraAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth) const {
