@@ -29,6 +29,12 @@ void AAuraCharacter::PossessedBy(AController* NewController) {
 	InitAbilityActorInfo();
 }
 
+int32 AAuraCharacter::GetPlayerLevel() {
+	const AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
+	check(AuraPlayerState)
+	return AuraPlayerState->GetPlayerLevel();
+}
+
 void AAuraCharacter::OnRep_PlayerState() {
 	Super::OnRep_PlayerState();
 
@@ -50,4 +56,5 @@ void AAuraCharacter::InitAbilityActorInfo() {
 			AuraHUD->InitOverlay(AuraPlayerController, AuraPlayerState, AuraAbilitySystemComponent, AttributeSet);
 		}
 	}
+	InitializeDefaultAttributes();
 }
