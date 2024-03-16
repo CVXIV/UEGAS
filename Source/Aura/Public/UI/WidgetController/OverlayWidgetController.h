@@ -28,12 +28,16 @@ struct FUIWidgetRow : public FTableRowBase {
 };
 
 // 以F开头
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMessageWidgetRowSignature, FUIWidgetRow, Row);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
 
-UCLASS(Blueprintable)
+#define GAMEPLAY_ATTRIBUTE_ON_CHANGE(AttributeName) \
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAttributeSet->Get##AttributeName##Attribute()).AddLambda([this](const FOnAttributeChangeData& Data) { \
+		On##AttributeName##Changed.Broadcast(Data.NewValue); \
+	});
+
+UCLASS(Blueprintable, BlueprintType)
 class AURA_API UOverlayWidgetController : public UAuraWidgetController {
 	GENERATED_BODY()
 
@@ -58,9 +62,6 @@ public:
 	FMessageWidgetRowSignature MessageWidgetRowDelegate;
 
 protected:
-	UPROPERTY()
-	TObjectPtr<UAuraAttributeSet> AuraAttributeSet;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget Data")
 	TObjectPtr<UDataTable> MessageWidgetDataTable;
 

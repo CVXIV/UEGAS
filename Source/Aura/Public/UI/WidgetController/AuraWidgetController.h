@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/Data/AttributeInfo.h"
 #include "AuraWidgetController.generated.h"
 
-class UAttributeSet;
+class UAuraAttributeSet;
 
 class UAbilitySystemComponent;
 
@@ -40,6 +41,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetWidgetControllerParams(const FWidgetControllerParams& WcParams);
 
+	UFUNCTION(BlueprintCallable)
 	virtual void BroadcastInitialValues();
 
 	virtual void BindCallbacksToDependencies();
@@ -57,5 +59,5 @@ protected:
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
-	TObjectPtr<UAttributeSet> AttributeSet;
+	TObjectPtr<UAuraAttributeSet> AuraAttributeSet;
 };

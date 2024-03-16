@@ -3,11 +3,13 @@
 
 #include "UI/WidgetController/AuraWidgetController.h"
 
+#include "AbilitySystem/AuraAttributeSet.h"
+
 void UAuraWidgetController::SetWidgetControllerParams(const FWidgetControllerParams& WcParams) {
 	PlayerController = WcParams.PlayerController;
 	PlayerState = WcParams.PlayerState;
 	AbilitySystemComponent = WcParams.AbilitySystemComponent;
-	AttributeSet = WcParams.AttributeSet;
+	AuraAttributeSet = CastChecked<UAuraAttributeSet>(WcParams.AttributeSet);
 	InitWidgetController();
 }
 

@@ -17,9 +17,19 @@ UOverlayWidgetController* AAuraHUD::GetOverlayWidgetController(const FWidgetCont
 	return OverlayWidgetController;
 }
 
+UAttributeMenuWidgetController* AAuraHUD::GetAttributeMenuWidgetController(const FWidgetControllerParams& WcParams) {
+	if (AttributeMenuWidgetController == nullptr) {
+		AttributeMenuWidgetController = NewObject<UAttributeMenuWidgetController>(this, AttributeMenuWidgetControllerClass);
+		AttributeMenuWidgetController->SetWidgetControllerParams(WcParams);
+		AttributeMenuWidgetController->BindCallbacksToDependencies();
+	}
+	return AttributeMenuWidgetController;
+}
+
 void AAuraHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* Asc, UAttributeSet* As) {
 	checkf(OverlayWidgetClass, TEXT("OverlayWidgetClass is null!"))
 	checkf(OverlayWidgetControllerClass, TEXT("OverlayWidgetControllerClass is null"))
+	checkf(AttributeMenuWidgetControllerClass, TEXT("AttributeMenuWidgetControllerClass is null"))
 
 	UUserWidget* UserWidget = CreateWidget<UUserWidget>(GetWorld(), OverlayWidgetClass);
 	OverlayWidget = Cast<UAuraUserWidget>(UserWidget);
