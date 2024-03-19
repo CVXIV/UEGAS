@@ -16,6 +16,12 @@ UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const {
 	return AuraAbilitySystemComponent;
 }
 
+FVector AAuraCharacterBase::GetCombatSocketLocation() {
+	check(Weapon)
+
+	return Weapon->GetSocketLocation(WeaponTipSocketName);
+}
+
 void AAuraCharacterBase::BeginPlay() {
 	Super::BeginPlay();
 }
@@ -36,4 +42,11 @@ void AAuraCharacterBase::InitializeDefaultAttributes() const {
 	ApplyEffectToSelf(DefaultPrimaryAttributes, 1.f);
 	ApplyEffectToSelf(DefaultSecondaryAttributes, 1.f);
 	ApplyEffectToSelf(DefaultVitalAttributes, 1.f);
+}
+
+void AAuraCharacterBase::AddCharacterAbilities() const {
+	check(IsValid(AuraAbilitySystemComponent))
+	if (!HasAuthority()) { return; }
+
+	AuraAbilitySystemComponent->AddCharacterAbilities(StartupAbilities);
 }
