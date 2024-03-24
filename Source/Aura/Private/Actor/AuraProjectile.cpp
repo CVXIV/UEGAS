@@ -3,10 +3,15 @@
 
 #include "Actor/AuraProjectile.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Aura/Aura.h"
+#include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
-// Sets default values
 AAuraProjectile::AAuraProjectile() {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
@@ -14,6 +19,7 @@ AAuraProjectile::AAuraProjectile() {
 	SphereComponent = CreateDefaultSubobject<USphereComponent>("SphereComponent");
 	SetRootComponent(SphereComponent);
 
+	SphereComponent->SetCollisionObjectType(ECC_PROJECTILE);
 	SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SphereComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	SphereComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
@@ -28,8 +34,35 @@ AAuraProjectile::AAuraProjectile() {
 
 void AAuraProjectile::BeginPlay() {
 	Super::BeginPlay();
+
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AAuraProjectile::OnSphereOverlap);
+	LoopSoundComponent = UGameplayStatics::SpawnSoundAttached(LoopSound, GetRootComponent());
+}
+
+void AAuraProjectile::Destroyed() {
+	// 只有不是服务器且bIsHit为false，才说明是服务器先执行的Overlap
+	if (bIsOverlap && !bIsHit && !HasAuthority()) {
+		// 说明是服务器先Destroy，客户端还没来得及渲染
+		OnOverlap();
+	}
+	Super::Destroyed();
 }
 
 void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+	OnOverlap();
+	bIsOverlap = true;
+	if (HasAuthority()) {
+		if (UAbilitySystemComponent* Asc = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OtherActor)) {
+			Asc->ApplyGameplayEffectSpecToSelf(*DamageEffectSpecHandle.Data.Get());
+		}
+		Destroy();
+	} else {
+		bIsHit = true;
+	}
+}
+
+void AAuraProjectile::OnOverlap() const {
+	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation(), FRotator::ZeroRotator);
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
+	LoopSoundComponent->Stop();
 }
