@@ -8,9 +8,13 @@
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "Components/SplineComponent.h"
 #include "Input/AuraInputComponent.h"
 #include "Interaction/EnemyInterface.h"
+#include "UI/Widget/AuraFloatTextWidget.h"
+
+static const FBox LimitBox(FVector(-60, -100, 0), FVector(60, -50, 0));
 
 AAuraPlayerController::AAuraPlayerController() {
 	bReplicates = true;
@@ -22,6 +26,8 @@ AAuraPlayerController::AAuraPlayerController() {
 
 void AAuraPlayerController::PlayerTick(float DeltaTime) {
 	Super::PlayerTick(DeltaTime);
+
+	check(FloatTextWidgetClass)
 
 	CursorTrace();
 
@@ -127,6 +133,18 @@ UAuraAbilitySystemComponent* AAuraPlayerController::GetAuraAbilitySystemComponen
 		AuraAbilitySystemComponent = Cast<UAuraAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn()));
 	}
 	return AuraAbilitySystemComponent;
+}
+
+void AAuraPlayerController::ClientShowWidget_Implementation(AActor* Target, float Damage) {
+	if (IsValid(Target)) {
+		UAuraFloatTextWidget* FloatTextWidget = Cast<UAuraFloatTextWidget>(CreateWidget(GetWorld(), FloatTextWidgetClass));
+
+		const FVector RandomPoint = FMath::RandPointInBox(LimitBox);
+		FloatTextWidget->BaseOffset = FVector2D(RandomPoint.X, RandomPoint.Y);	
+		FloatTextWidget->OwningActor = Target;
+		FloatTextWidget->SetDamageText(Damage);
+		FloatTextWidget->AddToViewport();
+	}
 }
 
 void AAuraPlayerController::BeginPlay() {

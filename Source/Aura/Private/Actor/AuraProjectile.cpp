@@ -36,6 +36,7 @@ void AAuraProjectile::BeginPlay() {
 	Super::BeginPlay();
 
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AAuraProjectile::OnSphereOverlap);
+
 	LoopSoundComponent = UGameplayStatics::SpawnSoundAttached(LoopSound, GetRootComponent());
 }
 
@@ -53,9 +54,9 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 	bIsOverlap = true;
 	if (HasAuthority()) {
 		if (UAbilitySystemComponent* Asc = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OtherActor)) {
-			Asc->ApplyGameplayEffectSpecToSelf(*DamageEffectSpecHandle.Data.Get());
+			Asc->ApplyGameplayEffectSpecToSelf(*DamageEffectSpecHandle.Data);
 		}
-		Destroy();
+		Multicast_OnDestroy();
 	} else {
 		bIsHit = true;
 	}
@@ -65,4 +66,9 @@ void AAuraProjectile::OnOverlap() const {
 	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation(), FRotator::ZeroRotator);
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
 	LoopSoundComponent->Stop();
+}
+
+void AAuraProjectile::Multicast_OnDestroy_Implementation() {
+	bIsOverlap = true;
+	Destroy();
 }

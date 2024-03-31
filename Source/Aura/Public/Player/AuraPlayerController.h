@@ -28,10 +28,16 @@ public:
 
 	virtual void PlayerTick(float DeltaTime) override;
 
+	UFUNCTION(Client, Reliable)
+	void ClientShowWidget(AActor* Target, float Damage);
+
 protected:
 	virtual void BeginPlay() override;
 
 	virtual void SetupInputComponent() override;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> FloatTextWidgetClass;
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Input")

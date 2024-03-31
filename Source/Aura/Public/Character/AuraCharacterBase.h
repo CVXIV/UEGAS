@@ -16,6 +16,17 @@ class UAuraAbilitySystemComponent;
 
 class UAttributeSet;
 
+USTRUCT()
+struct FAbilityInfo {
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameplayAbility> AbilityClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	int32 Level = 1;
+};
+
 UCLASS(Abstract)
 class AURA_API AAuraCharacterBase : public ACharacter, public IAbilitySystemInterface, public ICombatInterface {
 	GENERATED_BODY()
@@ -27,6 +38,9 @@ public:
 
 	virtual FVector GetCombatSocketLocation() override;
 
+	UFUNCTION(NetMulticast, Reliable)
+	virtual void Die() override;
+
 	UAttributeSet* GetAttributeSet() const {
 		return AttributeSet;
 	}
@@ -34,11 +48,13 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void OnDie();
+
 	virtual void InitAbilityActorInfo();
 
 	void ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffect, float Level) const;
 
-	void InitializeDefaultAttributes() const;
+	virtual void InitializeDefaultAttributes() const;
 
 	void AddCharacterAbilities() const;
 
@@ -65,5 +81,5 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Abilities")
-	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
+	TArray<FAbilityInfo> StartupAbilities;
 };

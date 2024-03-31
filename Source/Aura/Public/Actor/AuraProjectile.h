@@ -52,7 +52,10 @@ protected:
 private:
 	void OnOverlap() const;
 
-	bool bIsOverlap;
+	uint8 bIsOverlap : 1;
 
-	bool bIsHit;
+	uint8 bIsHit : 1;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_OnDestroy();
 };

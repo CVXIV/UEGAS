@@ -5,8 +5,14 @@
 
 #include "AuraGameplayTags.h"
 #include "GameplayEffectExtension.h"
+#include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Character/AuraCharacterBase.h"
 #include "GameFramework/Character.h"
+#include "Interaction/CombatInterface.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/AuraPlayerController.h"
+#include "UI/Widget/AuraFloatTextWidget.h"
 
 UAuraAttributeSet::UAuraAttributeSet() {
 	const FAuraGameplayTags& AuraGameplayTags = FAuraGameplayTags::Get();
@@ -87,6 +93,26 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 		SetHealth(FMath::Clamp(GetHealth(), 0.f, GetMaxHealth()));
 	} else if (Data.EvaluatedData.Attribute == GetManaAttribute()) {
 		SetMana(FMath::Clamp(GetMana(), 0.f, GetMaxMana()));
+	} else if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute()) {
+		const float LocalIncomingDamage = GetIncomingDamage();
+		SetIncomingDamage(0.f);
+		if (LocalIncomingDamage > 0) {
+			const float NewHealth = GetHealth() - LocalIncomingDamage;
+			SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
+
+			if (NewHealth <= 0.f) {
+				if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(EffectProperties.TargetAvatarActor)) {
+					CombatInterface->Die();
+				}
+			} else {
+				FGameplayTagContainer TagContainer;
+				TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);
+				EffectProperties.TargetAsc->CancelAbilities(&TagContainer);
+				EffectProperties.TargetAsc->TryActivateAbilitiesByTag(TagContainer);
+			}
+			AAuraPlayerController* PlayerController = Cast<AAuraPlayerController>(EffectProperties.SourceController);
+			PlayerController->ClientShowWidget(EffectProperties.TargetAvatarActor, LocalIncomingDamage);
+		}
 	}
 }
 

@@ -9,6 +9,7 @@
 
 AAuraEffectActor::AAuraEffectActor() {
 	PrimaryActorTick.bCanEverTick = false;
+	bReplicates = true;
 
 	SetRootComponent(CreateDefaultSubobject<USceneComponent>("SceneRoot"));
 }
@@ -48,8 +49,10 @@ bool AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, const TSubclassO
 
 void AAuraEffectActor::OnOverlap(AActor* TargetActor) {
 	if (GameplayEffectInfo.EffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnOverlap) {
-		if (ApplyEffectToTarget(TargetActor, GameplayEffectInfo.GameplayEffectClass)) {
-			Destroy();
+		if (TargetActor->HasAuthority()) {
+			if (ApplyEffectToTarget(TargetActor, GameplayEffectInfo.GameplayEffectClass)) {
+				Destroy();
+			}
 		}
 	}
 }
@@ -57,20 +60,24 @@ void AAuraEffectActor::OnOverlap(AActor* TargetActor) {
 void AAuraEffectActor::OnEndOverlap(AActor* TargetActor) {
 	// 添加效果
 	if (GameplayEffectInfo.EffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnEndOverlap) {
-		if (ApplyEffectToTarget(TargetActor, GameplayEffectInfo.GameplayEffectClass)) {
-			Destroy();
+		if (TargetActor->HasAuthority()) {
+			if (ApplyEffectToTarget(TargetActor, GameplayEffectInfo.GameplayEffectClass)) {
+				Destroy();
+			}
 		}
 	}
 
 	// 删除效果
 	if (GameplayEffectInfo.EffectRemovalPolicy == EEffectRemovalPolicy::RemoveOnEndOverlap) {
-		if (UAuraAbilitySystemComponent* AbilitySystemComponent = Cast<UAuraAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor))) {
-			if (int& Count = AbilitySystemComponent->GetGameplayEffectDenyCount().FindOrAdd(GameplayEffectInfo.GameplayEffectClass); Count > 0) {
-				Count--;
-			} else {
-				const TSharedPtr<TQueue<FActiveGameplayEffectHandle>> Queue = AbilitySystemComponent->GetGameplayEffectHandle().FindOrAdd(GameplayEffectInfo.GameplayEffectClass, MakeShared<TQueue<FActiveGameplayEffectHandle>>());
-				if (FActiveGameplayEffectHandle ActiveGameplayEffectHandle; Queue->Dequeue(ActiveGameplayEffectHandle)) {
-					AbilitySystemComponent->RemoveActiveGameplayEffect(ActiveGameplayEffectHandle, 1);
+		if (TargetActor->HasAuthority()) {
+			if (UAuraAbilitySystemComponent* AbilitySystemComponent = Cast<UAuraAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor))) {
+				if (int& Count = AbilitySystemComponent->GetGameplayEffectDenyCount().FindOrAdd(GameplayEffectInfo.GameplayEffectClass); Count > 0) {
+					Count--;
+				} else {
+					const TSharedPtr<TQueue<FActiveGameplayEffectHandle>> Queue = AbilitySystemComponent->GetGameplayEffectHandle().FindOrAdd(GameplayEffectInfo.GameplayEffectClass, MakeShared<TQueue<FActiveGameplayEffectHandle>>());
+					if (FActiveGameplayEffectHandle ActiveGameplayEffectHandle; Queue->Dequeue(ActiveGameplayEffectHandle)) {
+						AbilitySystemComponent->RemoveActiveGameplayEffect(ActiveGameplayEffectHandle, 1);
+					}
 				}
 			}
 		}

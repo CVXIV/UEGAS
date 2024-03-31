@@ -49,7 +49,7 @@ struct FEffectProperties {
 };
 
 //typedef TBaseStaticDelegateInstance<FGameplayAttribute(), FDefaultDelegateUserPolicy>::FFuncPtr FAttributeFuncPtr;
-template<class T>
+template <class T>
 using TStaticFuncPtr = typename TBaseStaticDelegateInstance<T, FDefaultDelegateUserPolicy>::FFuncPtr;
 
 UCLASS()
@@ -159,6 +159,14 @@ public:
 
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, ManaRegeneration)
 
+
+	/**
+	 * Meta Attributes，完全在服务器计算，不需要复制
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "Meta Attributes")
+	FGameplayAttributeData IncomingDamage;
+
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, IncomingDamage)
 
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldHealth) const;

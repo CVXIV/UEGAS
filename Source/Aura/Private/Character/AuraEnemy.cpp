@@ -2,10 +2,13 @@
 #include "Character/AuraEnemy.h"
 
 #include "AbilitySystemComponent.h"
+#include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "Aura/Aura.h"
 #include "Components/WidgetComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "UI/Widget/AuraUserWidget.h"
 
 AAuraEnemy::AAuraEnemy() {
@@ -44,12 +47,20 @@ int32 AAuraEnemy::GetPlayerLevel() {
 	return Level;
 }
 
+UAnimMontage* AAuraEnemy::GetHitReactMontage_Implementation() {
+	return HitReactMontage;
+}
+
 void AAuraEnemy::BeginPlay() {
 	Super::BeginPlay();
 
+	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+
 	InitAbilityActorInfo();
 
-	UAuraUserWidget* AuraUserWidget =CastChecked<UAuraUserWidget>(HealthBar->GetUserWidgetObject());
+	UAuraAbilitySystemLibrary::GiveStartupAbilities(this, AuraAbilitySystemComponent);
+
+	UAuraUserWidget* AuraUserWidget = CastChecked<UAuraUserWidget>(HealthBar->GetUserWidgetObject());
 	AuraUserWidget->SetWidgetController(this);
 
 	const UAuraAttributeSet* AuraAttributeSet = CastChecked<UAuraAttributeSet>(AttributeSet);
@@ -61,8 +72,13 @@ void AAuraEnemy::BeginPlay() {
 		OnMaxHealthChanged.Broadcast(Data.NewValue);
 	});
 
-	OnHealthChanged.Broadcast(AuraAttributeSet->GetHealth());
-	OnMaxHealthChanged.Broadcast(AuraAttributeSet->GetMaxHealth());
+	AuraAbilitySystemComponent->RegisterGameplayTagEvent(FAuraGameplayTags::Get().Effects_HitReact, EGameplayTagEventType::NewOrRemoved).AddLambda([this](const FGameplayTag Tag, int32 NewCount) {
+		bHitReacting = NewCount > 0;
+		GetCharacterMovement()->MaxWalkSpeed = bHitReacting ? 0.f : BaseWalkSpeed;
+	});
+
+	OnHealthInitialize.Broadcast(AuraAttributeSet->GetHealth());
+	OnMaxHealthInitialize.Broadcast(AuraAttributeSet->GetMaxHealth());
 }
 
 void AAuraEnemy::InitAbilityActorInfo() {
@@ -70,4 +86,30 @@ void AAuraEnemy::InitAbilityActorInfo() {
 	AuraAbilitySystemComponent->InitAbilityActorInfo(this, this);
 	AuraAbilitySystemComponent->AbilityActorInfoSet();
 	InitializeDefaultAttributes();
+}
+
+void AAuraEnemy::OnDie() {
+	Super::OnDie();
+	Dissolve();
+}
+
+void AAuraEnemy::InitializeDefaultAttributes() const {
+	UAuraAbilitySystemLibrary::InitializeDefaultAttributes(this, CharacterClass, Level, AuraAbilitySystemComponent);
+}
+
+void AAuraEnemy::Dissolve() {
+	TArray<UMaterialInstanceDynamic*> MaterialInstanceDynamics;
+	if (DissolveMaterial) {
+		UMaterialInstanceDynamic* MaterialInstanceDynamic = UMaterialInstanceDynamic::Create(DissolveMaterial, this);
+		GetMesh()->SetMaterial(0, MaterialInstanceDynamic);
+		MaterialInstanceDynamics.Add(MaterialInstanceDynamic);
+	}
+
+	if (DissolveWeaponMaterial) {
+		UMaterialInstanceDynamic* MaterialInstanceDynamic = UMaterialInstanceDynamic::Create(DissolveWeaponMaterial, this);
+		Weapon->SetMaterial(0, MaterialInstanceDynamic);
+		MaterialInstanceDynamics.Add(MaterialInstanceDynamic);
+	}
+
+	StartDissolve(MaterialInstanceDynamics);
 }

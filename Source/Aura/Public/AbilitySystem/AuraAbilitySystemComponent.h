@@ -17,7 +17,7 @@ public:
 
 	[[nodiscard]] TMap<TSubclassOf<UGameplayEffect>, TSharedPtr<TQueue<FActiveGameplayEffectHandle>>>& GetGameplayEffectHandle();
 
-	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities);
+	void AddCharacterAbilities(const TArray<struct FAbilityInfo>& StartupAbilities);
 
 	void AbilityActorInfoSet();
 

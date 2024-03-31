@@ -52,6 +52,13 @@ public:
 
 	FGameplayTag InputTag_4;
 
+	// Combat
+	FGameplayTag Damage;
+
+	FGameplayTag Effects_HitReact;
+
+	FGameplayTag DurationHeal;
+
 protected:
 private:
 	static FAuraGameplayTags S_GameplayTags;
