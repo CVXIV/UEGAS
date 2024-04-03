@@ -6,6 +6,7 @@
 #include "GameplayTagsManager.h"
 
 FAuraGameplayTags FAuraGameplayTags::S_GameplayTags;
+FOnGameplayTagsInitialized FAuraGameplayTags::S_OnGameplayTagsInitialized;
 
 void FAuraGameplayTags::InitializeNativeGameplayTags() {
 	/**
@@ -40,9 +41,25 @@ void FAuraGameplayTags::InitializeNativeGameplayTags() {
 	S_GameplayTags.InputTag_3 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("InputTag.3"), FString("3"));
 	S_GameplayTags.InputTag_4 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("InputTag.4"), FString("4"));
 
-	S_GameplayTags.Damage = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Damage"), FString("Damage4"));
+	S_GameplayTags.Damage = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Damage"), FString("Damage"));
+
+	S_GameplayTags.Damage_Fire = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Damage.Fire"), FString("Fire Type Damage"));
+	S_GameplayTags.Damage_Lightning = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Damage.Lightning"), FString("Lightning Type Damage"));
+	S_GameplayTags.Damage_Arcane = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Damage.Arcane"), FString("Arcane Type Damage"));
+	S_GameplayTags.Damage_Physical = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Damage.Physical"), FString("Physical Type Damage"));
+	S_GameplayTags.Attributes_Resistance_Fire = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Resistance.Fire"), FString("Resistance To Fire Damage"));
+	S_GameplayTags.Attributes_Resistance_Lightning = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Resistance.Lightning"), FString("Resistance To Lightning Damage"));
+	S_GameplayTags.Attributes_Resistance_Arcane = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Resistance.Arcane"), FString("Resistance To Arcane Damage"));
+	S_GameplayTags.Attributes_Resistance_Physical = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Resistance.Physical"), FString("Resistance To Physical Damage"));
+
+	S_GameplayTags.DamageTypesToResistance.Add(S_GameplayTags.Damage_Fire, S_GameplayTags.Attributes_Resistance_Fire);
+	S_GameplayTags.DamageTypesToResistance.Add(S_GameplayTags.Damage_Lightning, S_GameplayTags.Attributes_Resistance_Lightning);
+	S_GameplayTags.DamageTypesToResistance.Add(S_GameplayTags.Damage_Arcane, S_GameplayTags.Attributes_Resistance_Arcane);
+	S_GameplayTags.DamageTypesToResistance.Add(S_GameplayTags.Damage_Physical, S_GameplayTags.Attributes_Resistance_Physical);
 
 	S_GameplayTags.Effects_HitReact = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Effects.HitReact"));
 
 	S_GameplayTags.DurationHeal = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("DurationHeal"));
+
+	S_GameplayTags.S_OnGameplayTagsInitialized.Broadcast();
 }

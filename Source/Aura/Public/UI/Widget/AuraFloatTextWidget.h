@@ -15,7 +15,7 @@ class AURA_API UAuraFloatTextWidget : public UUserWidget {
 
 public:
 	UFUNCTION(BlueprintImplementableEvent)
-	void SetDamageText(float Damage);
+	void SetDamageText(float Damage, bool bIsCriticalHit, bool bIsBlockedHit);
 
 	UPROPERTY()
 	AActor* OwningActor;
@@ -24,4 +24,6 @@ public:
 
 protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+	virtual void NativeConstruct() override;
 };

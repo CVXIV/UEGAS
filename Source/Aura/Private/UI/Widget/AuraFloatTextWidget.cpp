@@ -13,3 +13,12 @@ void UAuraFloatTextWidget::NativeTick(const FGeometry& MyGeometry, float InDelta
 
 	SetPositionInViewport(BaseOffset + ScreenPosition);
 }
+
+void UAuraFloatTextWidget::NativeConstruct() {
+	Super::NativeConstruct();
+
+	FVector2D ScreenPosition;
+	UGameplayStatics::ProjectWorldToScreen(UGameplayStatics::GetPlayerController(GetWorld(), 0), OwningActor->GetActorLocation(), ScreenPosition, false);
+
+	SetPositionInViewport(BaseOffset + ScreenPosition);
+}

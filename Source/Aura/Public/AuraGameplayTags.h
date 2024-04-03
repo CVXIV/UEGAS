@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnGameplayTagsInitialized);
+
 struct FAuraGameplayTags {
 public:
 	const static FAuraGameplayTags& Get() { return S_GameplayTags; }
@@ -39,6 +41,15 @@ public:
 
 	FGameplayTag Attribute_Secondary_MaxMana;
 
+	// 属性抵抗
+	FGameplayTag Attributes_Resistance_Fire;
+
+	FGameplayTag Attributes_Resistance_Lightning;
+
+	FGameplayTag Attributes_Resistance_Arcane;
+
+	FGameplayTag Attributes_Resistance_Physical;
+
 	// Input Tag
 	FGameplayTag InputTag_LMB;
 
@@ -52,12 +63,24 @@ public:
 
 	FGameplayTag InputTag_4;
 
+	FGameplayTag DurationHeal;
+
 	// Combat
 	FGameplayTag Damage;
 
+	FGameplayTag Damage_Fire;
+
+	FGameplayTag Damage_Lightning;
+
+	FGameplayTag Damage_Arcane;
+
+	FGameplayTag Damage_Physical;
+
 	FGameplayTag Effects_HitReact;
 
-	FGameplayTag DurationHeal;
+	TMap<FGameplayTag, FGameplayTag> DamageTypesToResistance;
+
+	static FOnGameplayTagsInitialized S_OnGameplayTagsInitialized;
 
 protected:
 private:

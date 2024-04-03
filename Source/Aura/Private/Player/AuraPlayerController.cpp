@@ -9,6 +9,7 @@
 #include "NavigationSystem.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/SplineComponent.h"
 #include "Input/AuraInputComponent.h"
 #include "Interaction/EnemyInterface.h"
@@ -135,14 +136,14 @@ UAuraAbilitySystemComponent* AAuraPlayerController::GetAuraAbilitySystemComponen
 	return AuraAbilitySystemComponent;
 }
 
-void AAuraPlayerController::ClientShowWidget_Implementation(AActor* Target, float Damage) {
+void AAuraPlayerController::ClientShowWidget_Implementation(AActor* Target, float Damage, bool bIsCriticalHit, bool bIsBlockedHit) {
 	if (IsValid(Target)) {
 		UAuraFloatTextWidget* FloatTextWidget = Cast<UAuraFloatTextWidget>(CreateWidget(GetWorld(), FloatTextWidgetClass));
 
 		const FVector RandomPoint = FMath::RandPointInBox(LimitBox);
-		FloatTextWidget->BaseOffset = FVector2D(RandomPoint.X, RandomPoint.Y);	
+		FloatTextWidget->BaseOffset = FVector2D(RandomPoint.X, RandomPoint.Y);
 		FloatTextWidget->OwningActor = Target;
-		FloatTextWidget->SetDamageText(Damage);
+		FloatTextWidget->SetDamageText(Damage, bIsCriticalHit, bIsBlockedHit);
 		FloatTextWidget->AddToViewport();
 	}
 }

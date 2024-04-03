@@ -159,6 +159,28 @@ public:
 
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, ManaRegeneration)
 
+	/**
+	 * 属性伤害抵抗
+	 */
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_FireResistance, Category = "Secondary Attributes")
+	FGameplayAttributeData FireResistance;
+
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, FireResistance)
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_LightningResistance, Category = "Secondary Attributes")
+	FGameplayAttributeData LightningResistance;
+
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, LightningResistance)
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_ArcaneResistance, Category = "Secondary Attributes")
+	FGameplayAttributeData ArcaneResistance;
+
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, ArcaneResistance)
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_PhysicalResistance, Category = "Secondary Attributes")
+	FGameplayAttributeData PhysicalResistance;
+
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, PhysicalResistance)
 
 	/**
 	 * Meta Attributes，完全在服务器计算，不需要复制
@@ -215,6 +237,18 @@ public:
 
 	UFUNCTION()
 	void OnRep_ManaRegeneration(const FGameplayAttributeData& OldManaRegeneration) const;
+
+	UFUNCTION()
+	void OnRep_FireResistance(const FGameplayAttributeData& OldAttributeData) const;
+
+	UFUNCTION()
+	void OnRep_LightningResistance(const FGameplayAttributeData& OldAttributeData) const;
+
+	UFUNCTION()
+	void OnRep_ArcaneResistance(const FGameplayAttributeData& OldAttributeData) const;
+
+	UFUNCTION()
+	void OnRep_PhysicalResistance(const FGameplayAttributeData& OldAttributeData) const;
 
 private:
 	static void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props);

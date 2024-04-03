@@ -65,7 +65,9 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 void AAuraProjectile::OnOverlap() const {
 	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation(), FRotator::ZeroRotator);
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
-	LoopSoundComponent->Stop();
+	if (LoopSoundComponent) {
+		LoopSoundComponent->Stop();
+	}
 }
 
 void AAuraProjectile::Multicast_OnDestroy_Implementation() {
