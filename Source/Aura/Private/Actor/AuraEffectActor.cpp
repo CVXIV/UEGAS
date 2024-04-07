@@ -26,6 +26,9 @@ bool AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, const TSubclassO
 	if (!IsValid(Asc)) {
 		return false;
 	}
+	if (!bApplyEffectToEnemies && TargetActor->ActorHasTag(FName("Enemy"))) {
+		return false;
+	}
 
 	//创建Effect的句柄 包含了实例化Effect所需数据
 	FGameplayEffectContextHandle EffectContextHandle = Asc->MakeEffectContext();

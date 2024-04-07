@@ -9,6 +9,10 @@
 #include "UI/WidgetController/OverlayWidgetController.h"
 #include "AuraEnemy.generated.h"
 
+class AAuraAIController;
+
+class UBehaviorTree;
+
 class UWidgetComponent;
 
 /**
@@ -28,6 +32,8 @@ public:
 	virtual int32 GetPlayerLevel() override;
 
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
+
+	virtual void PossessedBy(AController* NewController) override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -64,6 +70,15 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	bool bHitReacting = false;
+
+	UPROPERTY(EditAnywhere, Category = "AI")
+	TObjectPtr<UBehaviorTree> BehaviorTree;
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	float AttackRange;
+
+	UPROPERTY()
+	TObjectPtr<AAuraAIController> AuraAIController;
 
 private:
 	void Dissolve();

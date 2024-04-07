@@ -61,4 +61,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
 	float ActorLevel = 1;
+
+	UPROPERTY(EditAnywhere)
+	bool bApplyEffectToEnemies;
 };

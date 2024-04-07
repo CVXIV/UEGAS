@@ -27,7 +27,7 @@ UAuraAttributeSet::UAuraAttributeSet() {
 	TagsToAttribute.Add(AuraGameplayTags.Attribute_Secondary_CriticalHitResistance, GetCriticalHitResistanceAttribute);
 	TagsToAttribute.Add(AuraGameplayTags.Attribute_Secondary_HealthRegeneration, GetHealthRegenerationAttribute);
 	TagsToAttribute.Add(AuraGameplayTags.Attribute_Secondary_ManaRegeneration, GetManaRegenerationAttribute);
-	
+
 	TagsToAttribute.Add(AuraGameplayTags.Attributes_Resistance_Fire, GetFireResistanceAttribute);
 	TagsToAttribute.Add(AuraGameplayTags.Attributes_Resistance_Lightning, GetLightningResistanceAttribute);
 	TagsToAttribute.Add(AuraGameplayTags.Attributes_Resistance_Arcane, GetArcaneResistanceAttribute);
@@ -59,7 +59,7 @@ void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, ManaRegeneration, COND_None, REPNOTIFY_Always)
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always)
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, MaxMana, COND_None, REPNOTIFY_Always)
-	
+
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, FireResistance, COND_None, REPNOTIFY_Always)
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, LightningResistance, COND_None, REPNOTIFY_Always)
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, ArcaneResistance, COND_None, REPNOTIFY_Always)
@@ -97,7 +97,13 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 	SetEffectProperties(Data, EffectProperties);
 
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute()) {
-		SetHealth(FMath::Clamp(GetHealth(), 0.f, GetMaxHealth()));
+		const float NewHealth = GetHealth();
+		SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
+		if (NewHealth <= 0) {
+			if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(EffectProperties.TargetAvatarActor)) {
+				CombatInterface->Die();
+			}
+		}
 	} else if (Data.EvaluatedData.Attribute == GetManaAttribute()) {
 		SetMana(FMath::Clamp(GetMana(), 0.f, GetMaxMana()));
 	} else if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute()) {
