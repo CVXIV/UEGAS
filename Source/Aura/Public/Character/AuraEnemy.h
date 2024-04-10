@@ -35,6 +35,10 @@ public:
 
 	virtual void PossessedBy(AController* NewController) override;
 
+	virtual void SetCombatTarget_Implementation(AActor* InCombatTarget) override;
+
+	virtual AActor* GetCombatTarget_Implementation() override;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -79,6 +83,9 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<AAuraAIController> AuraAIController;
+
+	UPROPERTY()
+	TObjectPtr<AActor> CombatTarget;
 
 private:
 	void Dissolve();

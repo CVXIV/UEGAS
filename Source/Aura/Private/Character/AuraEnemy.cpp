@@ -36,6 +36,7 @@ AAuraEnemy::AAuraEnemy() {
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	GetCharacterMovement()->RotationRate = FRotator(0, 120, 0);
 }
 
 void AAuraEnemy::HighlightActor() {
@@ -73,6 +74,14 @@ void AAuraEnemy::PossessedBy(AController* NewController) {
 	AuraAIController->GetBlackboardComponent()->SetValueAsFloat("AttackRange", AttackRange);
 }
 
+void AAuraEnemy::SetCombatTarget_Implementation(AActor* InCombatTarget) {
+	CombatTarget = InCombatTarget;
+}
+
+AActor* AAuraEnemy::GetCombatTarget_Implementation() {
+	return CombatTarget;
+}
+
 void AAuraEnemy::BeginPlay() {
 	Super::BeginPlay();
 
@@ -80,7 +89,7 @@ void AAuraEnemy::BeginPlay() {
 
 	InitAbilityActorInfo();
 
-	UAuraAbilitySystemLibrary::GiveStartupAbilities(this, AuraAbilitySystemComponent);
+	UAuraAbilitySystemLibrary::GiveStartupAbilities(this, AuraAbilitySystemComponent, CharacterClass);
 
 	UAuraUserWidget* AuraUserWidget = CastChecked<UAuraUserWidget>(HealthBar->GetUserWidgetObject());
 	AuraUserWidget->SetWidgetController(this);
@@ -94,10 +103,12 @@ void AAuraEnemy::BeginPlay() {
 		OnMaxHealthChanged.Broadcast(Data.NewValue);
 	});
 
-	AuraAbilitySystemComponent->RegisterGameplayTagEvent(FAuraGameplayTags::Get().Effects_HitReact, EGameplayTagEventType::NewOrRemoved).AddLambda([this](const FGameplayTag Tag, int32 NewCount) {
+	AuraAbilitySystemComponent->RegisterGameplayTagEvent(FAuraGameplayTags::Get().Action_HitReact, EGameplayTagEventType::NewOrRemoved).AddLambda([this](const FGameplayTag Tag, int32 NewCount) {
 		bHitReacting = NewCount > 0;
 		GetCharacterMovement()->MaxWalkSpeed = bHitReacting ? 0.f : BaseWalkSpeed;
-		AuraAIController->GetBlackboardComponent()->SetValueAsBool("HitReacting", bHitReacting);
+		if (AuraAIController) {
+			AuraAIController->GetBlackboardComponent()->SetValueAsBool("HitReacting", bHitReacting);
+		}
 	});
 
 	OnHealthInitialize.Broadcast(AuraAttributeSet->GetHealth());

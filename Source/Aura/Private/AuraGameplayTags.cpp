@@ -6,6 +6,7 @@
 #include "GameplayTagsManager.h"
 
 FAuraGameplayTags FAuraGameplayTags::S_GameplayTags;
+
 FOnGameplayTagsInitialized FAuraGameplayTags::S_OnGameplayTagsInitialized;
 
 void FAuraGameplayTags::InitializeNativeGameplayTags() {
@@ -57,9 +58,14 @@ void FAuraGameplayTags::InitializeNativeGameplayTags() {
 	S_GameplayTags.DamageTypesToResistance.Add(S_GameplayTags.Damage_Arcane, S_GameplayTags.Attributes_Resistance_Arcane);
 	S_GameplayTags.DamageTypesToResistance.Add(S_GameplayTags.Damage_Physical, S_GameplayTags.Attributes_Resistance_Physical);
 
-	S_GameplayTags.Effects_HitReact = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Effects.HitReact"));
+	S_GameplayTags.Action_HitReact = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Action.HitReact"));
+	S_GameplayTags.Action_Attack = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Action.Attack"));
 
 	S_GameplayTags.DurationHeal = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("DurationHeal"));
+
+	S_GameplayTags.Montage_Attack_Weapon = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Montage.Attack.Weapon"));
+	S_GameplayTags.Montage_Attack_LeftHand = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Montage.Attack.LeftHand"));
+	S_GameplayTags.Montage_Attack_RightHand = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Montage.Attack.RightHand"));
 
 	S_GameplayTags.S_OnGameplayTagsInitialized.Broadcast();
 }

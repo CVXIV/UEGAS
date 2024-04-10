@@ -5,6 +5,7 @@
 
 #include "AIController.h"
 #include "BehaviorTree/BTFunctionLibrary.h"
+#include "Interaction/CombatInterface.h"
 #include "Kismet/GameplayStatics.h"
 
 void UBTService_FindNearestPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) {
@@ -19,7 +20,7 @@ void UBTService_FindNearestPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, u
 	float ClosestDistance = TNumericLimits<float>::Max();
 	AActor* ClosetActor = nullptr;
 	for (AActor* Actor : ActorsWithTag) {
-		if (IsValid(Actor)) {
+		if (IsValid(Actor) && Actor->Implements<UCombatInterface>() && !ICombatInterface::Execute_IsDead(Actor)) {
 			const float Distance = Actor->GetDistanceTo(OwningPawn);
 			if (Distance < ClosestDistance) {
 				ClosestDistance = Distance;

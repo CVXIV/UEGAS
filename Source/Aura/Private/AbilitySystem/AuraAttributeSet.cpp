@@ -118,15 +118,20 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 					CombatInterface->Die();
 				}
 			} else {
-				FGameplayTagContainer TagContainer;
-				TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);
-				EffectProperties.TargetAsc->CancelAbilities(&TagContainer);
-				EffectProperties.TargetAsc->TryActivateAbilitiesByTag(TagContainer);
+				FGameplayTagContainer TagContainerCancel;
+				TagContainerCancel.AddTag(FAuraGameplayTags::Get().Action_HitReact);
+				EffectProperties.TargetAsc->CancelAbilities(&TagContainerCancel);
+				EffectProperties.TargetAsc->TryActivateAbilitiesByTag(TagContainerCancel);
 			}
 			const bool bIsCriticalHit = UAuraAbilitySystemLibrary::IsCriticalHit(EffectProperties.EffectContextHandle);
 			const bool bIsBlockedHit = UAuraAbilitySystemLibrary::IsBlockedHit(EffectProperties.EffectContextHandle);
 			AAuraPlayerController* PlayerController = Cast<AAuraPlayerController>(EffectProperties.SourceController);
-			PlayerController->ClientShowWidget(EffectProperties.TargetAvatarActor, LocalIncomingDamage, bIsCriticalHit, bIsBlockedHit);
+			if (!PlayerController) {
+				PlayerController = Cast<AAuraPlayerController>(EffectProperties.TargetController);
+			}
+			if (PlayerController) {
+				PlayerController->ClientShowWidget(EffectProperties.TargetAvatarActor, LocalIncomingDamage, bIsCriticalHit, bIsBlockedHit);
+			}
 		}
 	}
 }

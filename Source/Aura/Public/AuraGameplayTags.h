@@ -76,7 +76,21 @@ public:
 
 	FGameplayTag Damage_Physical;
 
-	FGameplayTag Effects_HitReact;
+	/** 同时只有一个行为的Tag*/
+	FGameplayTag Action_HitReact;
+
+	FGameplayTag Action_Attack;
+
+	/**/
+	
+	/** Montage*/
+	FGameplayTag Montage_Attack_Weapon;
+
+	FGameplayTag Montage_Attack_RightHand;
+
+	FGameplayTag Montage_Attack_LeftHand;
+
+	/**/
 
 	TMap<FGameplayTag, FGameplayTag> DamageTypesToResistance;
 
