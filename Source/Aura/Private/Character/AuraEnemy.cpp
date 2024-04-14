@@ -16,8 +16,6 @@
 
 AAuraEnemy::AAuraEnemy() {
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-	GetMesh()->SetCollisionResponseToChannel(ECC_PROJECTILE, ECR_Overlap);
 	GetMesh()->SetGenerateOverlapEvents(true);
 
 	Weapon->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
@@ -84,6 +82,10 @@ AActor* AAuraEnemy::GetCombatTarget_Implementation() {
 
 void AAuraEnemy::BeginPlay() {
 	Super::BeginPlay();
+	
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	GetMesh()->SetSimulatePhysics(false);
+	Weapon->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 

@@ -37,7 +37,9 @@ void AAuraProjectile::BeginPlay() {
 
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AAuraProjectile::OnSphereOverlap);
 
-	LoopSoundComponent = UGameplayStatics::SpawnSoundAttached(LoopSound, GetRootComponent());
+	if (LoopSound) {
+		LoopSoundComponent = UGameplayStatics::SpawnSoundAttached(LoopSound, GetRootComponent());
+	}
 }
 
 void AAuraProjectile::Destroyed() {
@@ -50,6 +52,9 @@ void AAuraProjectile::Destroyed() {
 }
 
 void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+	if (OtherActor == GetOwner()) {
+		return;
+	}
 	OnOverlap();
 	bIsOverlap = true;
 	if (HasAuthority()) {
