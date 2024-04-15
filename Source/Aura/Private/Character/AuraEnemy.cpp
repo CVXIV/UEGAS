@@ -34,7 +34,7 @@ AAuraEnemy::AAuraEnemy() {
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
-	GetCharacterMovement()->RotationRate = FRotator(0, 120, 0);
+	GetCharacterMovement()->RotationRate = FRotator(0, 240, 0);
 }
 
 void AAuraEnemy::HighlightActor() {
@@ -69,6 +69,7 @@ void AAuraEnemy::PossessedBy(AController* NewController) {
 	AuraAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
 	AuraAIController->RunBehaviorTree(BehaviorTree);
 	AuraAIController->GetBlackboardComponent()->SetValueAsBool("HitReacting", false);
+	AuraAIController->GetBlackboardComponent()->SetValueAsBool("Dead", false);
 	AuraAIController->GetBlackboardComponent()->SetValueAsFloat("AttackRange", AttackRange);
 }
 
@@ -82,7 +83,7 @@ AActor* AAuraEnemy::GetCombatTarget_Implementation() {
 
 void AAuraEnemy::BeginPlay() {
 	Super::BeginPlay();
-	
+
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	GetMesh()->SetSimulatePhysics(false);
 	Weapon->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -125,8 +126,11 @@ void AAuraEnemy::InitAbilityActorInfo() {
 }
 
 void AAuraEnemy::OnDie() {
-	Super::OnDie();
 	Dissolve();
+	if (AuraAIController) {
+		AuraAIController->GetBlackboardComponent()->SetValueAsBool("Dead", true);
+	}
+	Super::OnDie();
 }
 
 void AAuraEnemy::InitializeDefaultAttributes() const {
