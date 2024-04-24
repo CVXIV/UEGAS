@@ -20,6 +20,7 @@ AAuraEnemy::AAuraEnemy() {
 
 	Weapon->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	Weapon->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	Weapon->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
 	AuraAbilitySystemComponent = CreateDefaultSubobject<UAuraAbilitySystemComponent>("AuraAbilitySystemComponent");
 	AuraAbilitySystemComponent->SetIsReplicated(true);
@@ -33,8 +34,9 @@ AAuraEnemy::AAuraEnemy() {
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
-	GetCharacterMovement()->bUseControllerDesiredRotation = true;
-	GetCharacterMovement()->RotationRate = FRotator(0, 240, 0);
+	GetCharacterMovement()->bUseControllerDesiredRotation = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0, 480, 0);
 }
 
 void AAuraEnemy::HighlightActor() {

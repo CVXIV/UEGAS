@@ -48,6 +48,10 @@ public:
 
 	virtual FTaggedMontage GetAttackMontage_Random_Implementation() const override;
 
+	virtual FTaggedMontage GetAttackMontageByTag_Implementation(const FGameplayTag& Tag) const override;
+
+	virtual UNiagaraSystem* GetBloodEffect_Implementation() const override;
+
 	/** Combat Interface*/
 
 	UAttributeSet* GetAttributeSet() const {
@@ -81,6 +85,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	FName RightHandSocketName;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	FName TailSocketName;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	TObjectPtr<UNiagaraSystem> BloodEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	TObjectPtr<USoundBase> DeathSound;
 
 	UPROPERTY()
 	TObjectPtr<UAttributeSet> AttributeSet;

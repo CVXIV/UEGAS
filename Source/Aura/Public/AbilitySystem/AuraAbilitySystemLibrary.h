@@ -57,4 +57,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|GameplayMechanics")
 	static TArray<AActor*> GetLivePlayersWithinRadius(const UObject* WorldContext, const TArray<AActor*> ActorsToIgnore, float Radius, const FVector& SphereOrigin);
+
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|GameplayEffects")
+	static bool TryActivateRandomAbilityByTag(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayTagContainer, bool bAllowRemoteActivation);
 };

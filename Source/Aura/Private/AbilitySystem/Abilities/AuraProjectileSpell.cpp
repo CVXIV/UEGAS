@@ -5,7 +5,6 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
-#include "AuraGameplayTags.h"
 #include "Actor/AuraProjectile.h"
 #include "Interaction/CombatInterface.h"
 
@@ -14,11 +13,11 @@ void UAuraProjectileSpell::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
-void UAuraProjectileSpell::Server_SpawnProjectile_Implementation(const FVector& ProjectileTargetLocation) {
+void UAuraProjectileSpell::Server_SpawnProjectile_Implementation(const FVector& ProjectileTargetLocation, const FGameplayTag& Tag) {
 	check(ProjectileClass)
 	check(DamageEffectClass)
 
-	const FVector SocketLocation = ICombatInterface::Execute_GetCombatSocketLocation(GetAvatarActorFromActorInfo(), FAuraGameplayTags::Get().Montage_Attack_Weapon);
+	const FVector SocketLocation = ICombatInterface::Execute_GetCombatSocketLocation(GetAvatarActorFromActorInfo(), Tag);
 	FRotator Rotation = (ProjectileTargetLocation - SocketLocation).Rotation();
 	Rotation.Pitch = 0.f;
 
@@ -49,10 +48,10 @@ void UAuraProjectileSpell::Server_SpawnProjectile_Implementation(const FVector& 
 	Projectile->FinishSpawning(SpawnTransform);
 }
 
-void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocation) {
+void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocation, const FGameplayTag& Tag) {
 	if (GetAvatarActorFromActorInfo()->HasAuthority()) {
-		Server_SpawnProjectile_Implementation(ProjectileTargetLocation);
+		Server_SpawnProjectile_Implementation(ProjectileTargetLocation, Tag);
 	} else {
-		Server_SpawnProjectile(ProjectileTargetLocation);
+		Server_SpawnProjectile(ProjectileTargetLocation, Tag);
 	}
 }

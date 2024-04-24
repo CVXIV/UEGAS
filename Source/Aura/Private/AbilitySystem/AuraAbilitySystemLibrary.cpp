@@ -4,6 +4,7 @@
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 
 #include "AuraAbilityTypes.h"
+#include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "Game/AuraGameModeBase.h"
 #include "Interaction/CombatInterface.h"
@@ -73,14 +74,18 @@ void UAuraAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContext
 	UCharacterClassInfo* CharacterClassInfo = AuraGameModeBase->CharacterClassInfo;
 	check(CharacterClassInfo)
 	for (const TSubclassOf<UGameplayAbility>& AbilityClass : CharacterClassInfo->CommonAbilities) {
-		FGameplayAbilitySpec GameplayAbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
-		AbilitySystemComponent->GiveAbility(GameplayAbilitySpec);
+		if (IsValid(AbilityClass)) {
+			FGameplayAbilitySpec GameplayAbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
+			AbilitySystemComponent->GiveAbility(GameplayAbilitySpec);
+		}
 	}
 	if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(AbilitySystemComponent->GetAvatarActor())) {
 		if (FCharacterClassDefaultInfo* DefaultInfo = CharacterClassInfo->CharacterClassInformation.Find(CharacterClass)) {
 			for (const TSubclassOf<UGameplayAbility>& StartupAbility : DefaultInfo->StartupAbilities) {
-				FGameplayAbilitySpec GameplayAbilitySpec = FGameplayAbilitySpec(StartupAbility, CombatInterface->GetPlayerLevel());
-				AbilitySystemComponent->GiveAbility(GameplayAbilitySpec);
+				if (IsValid(StartupAbility)) {
+					FGameplayAbilitySpec GameplayAbilitySpec = FGameplayAbilitySpec(StartupAbility, CombatInterface->GetPlayerLevel());
+					AbilitySystemComponent->GiveAbility(GameplayAbilitySpec);
+				}
 			}
 		}
 	}
@@ -138,4 +143,9 @@ TArray<AActor*> UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObj
 	}
 
 	return OverlappingActors.Array();
+}
+
+bool UAuraAbilitySystemLibrary::TryActivateRandomAbilityByTag(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayTagContainer, bool bAllowRemoteActivation) {
+	UAuraAbilitySystemComponent* AuraAbilitySystemComponent = CastChecked<UAuraAbilitySystemComponent>(AbilitySystemComponent);
+	return AuraAbilitySystemComponent->TryActivateRandomAbilityByTag(GameplayTagContainer, bAllowRemoteActivation);
 }

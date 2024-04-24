@@ -49,6 +49,22 @@ void UAuraAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& In
 	}
 }
 
+bool UAuraAbilitySystemComponent::TryActivateRandomAbilityByTag(const FGameplayTagContainer& GameplayTagContainer, bool bAllowRemoteActivation) {
+	TArray<FGameplayAbilitySpec*> AbilitiesToActivate;
+	GetActivatableGameplayAbilitySpecsByAllMatchingTags(GameplayTagContainer, AbilitiesToActivate);
+
+	bool bSuccess = false;
+
+	while (!bSuccess && !AbilitiesToActivate.IsEmpty()) {
+		const int Index = FMath::RandRange(0, AbilitiesToActivate.Num() - 1);
+		AbilitiesToActivate[Index];
+		bSuccess = TryActivateAbility(AbilitiesToActivate[Index]->Handle, bAllowRemoteActivation);
+		AbilitiesToActivate.RemoveAt(Index);
+	}
+
+	return bSuccess;
+}
+
 void UAuraAbilitySystemComponent::ClientEffectApplied_Implementation(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayEffectSpec& GameplayEffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle) {
 	FGameplayTagContainer GameplayTagContainer;
 	GameplayEffectSpec.GetAllAssetTags(GameplayTagContainer);

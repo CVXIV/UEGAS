@@ -6,6 +6,7 @@
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Aura/Aura.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 AAuraCharacterBase::AAuraCharacterBase() {
 	PrimaryActorTick.bCanEverTick = false;
@@ -35,6 +36,9 @@ FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation(const FGamepl
 	if (MontageTag.MatchesTagExact(AuraGameplayTags.Montage_Attack_RightHand)) {
 		return GetMesh()->GetSocketLocation(RightHandSocketName);
 	}
+	if (MontageTag.MatchesTagExact(AuraGameplayTags.Montage_Attack_Tail)) {
+		return GetMesh()->GetSocketLocation(TailSocketName);
+	}
 	return FVector();
 }
 
@@ -52,6 +56,21 @@ FTaggedMontage AAuraCharacterBase::GetAttackMontage_Random_Implementation() cons
 	return AttackMontage[Index];
 }
 
+FTaggedMontage AAuraCharacterBase::GetAttackMontageByTag_Implementation(const FGameplayTag& Tag) const {
+	check(!AttackMontage.IsEmpty())
+	for (const FTaggedMontage& Item : AttackMontage) {
+		if (Item.MontageTag.MatchesTagExact(Tag)) {
+			return Item;
+		}
+	}
+	checkf(false, TEXT("invalid tag:%s"), *Tag.ToString())
+	return FTaggedMontage();
+}
+
+UNiagaraSystem* AAuraCharacterBase::GetBloodEffect_Implementation() const {
+	return BloodEffect;
+}
+
 void AAuraCharacterBase::Die_Implementation() {
 	OnDie();
 }
@@ -64,6 +83,8 @@ void AAuraCharacterBase::BeginPlay() {
 
 void AAuraCharacterBase::OnDie() {
 	bDead = true;
+
+	UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation());
 
 	Weapon->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 	Weapon->SetSimulatePhysics(true);

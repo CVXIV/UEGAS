@@ -6,9 +6,8 @@
 #include "BehaviorTree/Tasks/BTTask_BlueprintBase.h"
 #include "BTTask_Attack.generated.h"
 
-/**
- * 
- */
+class UAbilitySystemComponent;
+
 UCLASS()
 class AURA_API UBTTask_Attack : public UBTTask_BlueprintBase {
 	GENERATED_BODY()
