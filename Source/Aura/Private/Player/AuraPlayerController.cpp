@@ -91,13 +91,15 @@ void AAuraPlayerController::AbilityInputTagReleased(const FGameplayTag InputTag)
 			if (FollowTime <= ShortPressedThreshold) {
 				if (const APawn* ControlledPawn = GetPawn()) {
 					if (UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(this, ControlledPawn->GetActorLocation(), CachedDestination)) {
-						Spline->ClearSplinePoints();
-						for (const FVector& LocPoint : NavPath->PathPoints) {
-							Spline->AddSplinePoint(LocPoint, ESplineCoordinateSpace::World);
-							DrawDebugSphere(GetWorld(), LocPoint, 8, 8, FColor::Green, false, 3);
+						if (!NavPath->PathPoints.IsEmpty()) {
+							Spline->ClearSplinePoints();
+							for (const FVector& LocPoint : NavPath->PathPoints) {
+								Spline->AddSplinePoint(LocPoint, ESplineCoordinateSpace::World);
+								DrawDebugSphere(GetWorld(), LocPoint, 8, 8, FColor::Green, false, 3);
+							}
+							CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];
+							bAutoRunning = true;
 						}
-						CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];
-						bAutoRunning = true;
 					}
 				}
 			}
