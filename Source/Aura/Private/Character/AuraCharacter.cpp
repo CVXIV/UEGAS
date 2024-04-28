@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "AbilitySystem/AuraPlayerAbilitySystemComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/AuraPlayerController.h"
 #include "Player/AuraPlayerState.h"
@@ -21,10 +22,10 @@ AAuraCharacter::AAuraCharacter() {
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
-	
+
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetSimulatePhysics(false);
-	
+
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
@@ -48,11 +49,22 @@ void AAuraCharacter::OnRep_PlayerState() {
 	InitAbilityActorInfo();
 }
 
+void AAuraCharacter::AddCharacterAbilities() const {
+	check(IsValid(AuraPlayerAbilitySystemComponent))
+	if (!HasAuthority()) { return; }
+
+	AuraPlayerAbilitySystemComponent->AddCharacterAbilities(StartupAbilities);
+}
+
 void AAuraCharacter::InitAbilityActorInfo() {
 	AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
 	check(AuraPlayerState)
 	AuraAbilitySystemComponent = Cast<UAuraAbilitySystemComponent>(AuraPlayerState->GetAbilitySystemComponent());
 	check(AuraAbilitySystemComponent)
+
+	AuraPlayerAbilitySystemComponent = Cast<UAuraPlayerAbilitySystemComponent>(AuraPlayerState->GetAbilitySystemComponent());
+	check(AuraPlayerAbilitySystemComponent)
+	
 	AuraAbilitySystemComponent->InitAbilityActorInfo(AuraPlayerState, this);
 	AuraAbilitySystemComponent->AbilityActorInfoSet();
 	AttributeSet = AuraPlayerState->GetAttributeSet();

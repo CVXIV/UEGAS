@@ -4,6 +4,7 @@
 #include "UI/WidgetController/AttributeMenuWidgetController.h"
 
 #include "AbilitySystem/AuraAttributeSet.h"
+#include "AbilitySystem/Data/AttributeInfo.h"
 
 void UAttributeMenuWidgetController::BroadcastInitialValues() {
 	Super::BroadcastInitialValues();
@@ -22,7 +23,7 @@ void UAttributeMenuWidgetController::BindCallbacksToDependencies() {
 
 	for (auto& Item : AuraAttributeSet->TagsToAttribute) {
 		// 按值捕获Item，因为当事件发生的时候，Item引用已经过期了，因此需要拷贝一个
-		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(Item.Value()).AddLambda([this,Item](const FOnAttributeChangeData& Data) {
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(Item.Value()).AddLambda([this, Item](const FOnAttributeChangeData& Data) {
 			FAuraAttributeInfo Info = AttributeInfo->FindAttributeInfoForTag(Item.Key);
 			Info.AttributeValue = Item.Value().GetNumericValue(AuraAttributeSet);
 			OnAttributeChanged.Broadcast(Info);

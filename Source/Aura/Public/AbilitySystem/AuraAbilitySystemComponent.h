@@ -13,11 +13,11 @@ class AURA_API UAuraAbilitySystemComponent : public UAbilitySystemComponent {
 	GENERATED_BODY()
 
 public:
+	UAuraAbilitySystemComponent();
+
 	[[nodiscard]] TMap<TSubclassOf<UGameplayEffect>, int32>& GetGameplayEffectDenyCount();
 
 	[[nodiscard]] TMap<TSubclassOf<UGameplayEffect>, TSharedPtr<TQueue<FActiveGameplayEffectHandle>>>& GetGameplayEffectHandle();
-
-	void AddCharacterAbilities(const TArray<struct FAbilityInfo>& StartupAbilities);
 
 	void AbilityActorInfoSet();
 

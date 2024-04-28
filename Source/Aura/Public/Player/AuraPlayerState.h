@@ -7,7 +7,7 @@
 #include "GameFramework/PlayerState.h"
 #include "AuraPlayerState.generated.h"
 
-class UAuraAbilitySystemComponent;
+class UAuraPlayerAbilitySystemComponent;
 
 class UAttributeSet;
 
@@ -28,7 +28,7 @@ public:
 
 protected:
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UAuraAbilitySystemComponent> AbilitySystemComponent;
+	TObjectPtr<UAuraPlayerAbilitySystemComponent> AbilitySystemComponent;
 
 	UPROPERTY()
 	TObjectPtr<UAttributeSet> AttributeSet;

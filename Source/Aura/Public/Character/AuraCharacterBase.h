@@ -17,7 +17,7 @@ class UAuraAbilitySystemComponent;
 class UAttributeSet;
 
 USTRUCT()
-struct FAbilityInfo {
+struct FAbilityDetail {
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly)
@@ -69,7 +69,6 @@ protected:
 
 	virtual void InitializeDefaultAttributes() const;
 
-	void AddCharacterAbilities() const;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAuraAbilitySystemComponent> AuraAbilitySystemComponent;
@@ -111,8 +110,4 @@ protected:
 	TArray<FTaggedMontage> AttackMontage;
 
 	bool bDead = false;
-
-private:
-	UPROPERTY(EditAnywhere, Category = "Abilities")
-	TArray<FAbilityInfo> StartupAbilities;
 };

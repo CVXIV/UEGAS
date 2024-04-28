@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
-#include "AbilitySystem/Data/AttributeInfo.h"
 #include "AuraWidgetController.generated.h"
 
 class UAuraAttributeSet;

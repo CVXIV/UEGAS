@@ -94,6 +94,16 @@ public:
 
 	/**/
 
+	/** Ability */
+	FGameplayTag Ability_FireBolt;
+
+	/**/
+
+	/** Cooldown */
+	FGameplayTag Cooldown_FireBolt;
+
+	/**/
+
 	TMap<FGameplayTag, FGameplayTag> DamageTypesToResistance;
 
 	static FOnGameplayTagsInitialized S_OnGameplayTagsInitialized;

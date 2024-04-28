@@ -149,3 +149,21 @@ bool UAuraAbilitySystemLibrary::TryActivateRandomAbilityByTag(UAbilitySystemComp
 	UAuraAbilitySystemComponent* AuraAbilitySystemComponent = CastChecked<UAuraAbilitySystemComponent>(AbilitySystemComponent);
 	return AuraAbilitySystemComponent->TryActivateRandomAbilityByTag(GameplayTagContainer, bAllowRemoteActivation);
 }
+
+FGameplayTag UAuraAbilitySystemLibrary::GetAuraAbilityTagFromAbility(const UGameplayAbility* GameplayAbility) {
+	for (const FGameplayTag& GameplayTag : GameplayAbility->AbilityTags) {
+		if (GameplayTag.MatchesTag(FGameplayTag::RequestGameplayTag("Ability"))) {
+			return GameplayTag;
+		}
+	}
+	return FGameplayTag();
+}
+
+FGameplayTag UAuraAbilitySystemLibrary::GetInputTagFromSpec(const FGameplayAbilitySpec& AbilitySpec) {
+	for (const FGameplayTag& GameplayTag : AbilitySpec.DynamicAbilityTags) {
+		if (GameplayTag.MatchesTag(FGameplayTag::RequestGameplayTag("InputTag"))) {
+			return GameplayTag;
+		}
+	}
+	return FGameplayTag();
+}

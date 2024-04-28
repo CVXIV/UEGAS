@@ -6,6 +6,8 @@
 #include "Character/AuraCharacterBase.h"
 #include "AuraCharacter.generated.h"
 
+class UAuraPlayerAbilitySystemComponent;
+
 UCLASS()
 class AURA_API AAuraCharacter : public AAuraCharacterBase {
 	GENERATED_BODY()
@@ -19,6 +21,15 @@ public:
 
 	virtual void OnRep_PlayerState() override;
 
+protected:
+	void AddCharacterAbilities() const;
+
+	UPROPERTY()
+	TObjectPtr<UAuraPlayerAbilitySystemComponent> AuraPlayerAbilitySystemComponent;
+
 private:
 	virtual void InitAbilityActorInfo() override;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Abilities")
+	TArray<FAbilityDetail> StartupAbilities;
 };

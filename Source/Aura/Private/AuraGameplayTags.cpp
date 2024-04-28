@@ -68,5 +68,9 @@ void FAuraGameplayTags::InitializeNativeGameplayTags() {
 	S_GameplayTags.Montage_Attack_RightHand = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Montage.Attack.RightHand"));
 	S_GameplayTags.Montage_Attack_Tail = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Montage.Attack.Tail"));
 
+	S_GameplayTags.Ability_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.FireBolt"));
+
+	S_GameplayTags.Cooldown_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.FireBolt"));
+
 	S_GameplayTags.S_OnGameplayTagsInitialized.Broadcast();
 }

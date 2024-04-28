@@ -116,10 +116,3 @@ void AAuraCharacterBase::InitializeDefaultAttributes() const {
 	ApplyEffectToSelf(DefaultSecondaryAttributes, 1.f);
 	ApplyEffectToSelf(DefaultVitalAttributes, 1.f);
 }
-
-void AAuraCharacterBase::AddCharacterAbilities() const {
-	check(IsValid(AuraAbilitySystemComponent))
-	if (!HasAuthority()) { return; }
-
-	AuraAbilitySystemComponent->AddCharacterAbilities(StartupAbilities);
-}

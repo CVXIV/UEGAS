@@ -4,8 +4,12 @@
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 
 #include "AuraGameplayTags.h"
-#include "AbilitySystem/Abilities/AuraGameplayAbility.h"
-#include "Character/AuraCharacterBase.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
+#include "UI/WidgetController/OverlayWidgetController.h"
+
+UAuraAbilitySystemComponent::UAuraAbilitySystemComponent() {
+	PrimaryComponentTick.bCanEverTick = false;
+}
 
 TMap<TSubclassOf<UGameplayEffect>, int32>& UAuraAbilitySystemComponent::GetGameplayEffectDenyCount() {
 	return GameplayEffectDenyCount;
@@ -13,17 +17,6 @@ TMap<TSubclassOf<UGameplayEffect>, int32>& UAuraAbilitySystemComponent::GetGamep
 
 TMap<TSubclassOf<UGameplayEffect>, TSharedPtr<TQueue<FActiveGameplayEffectHandle>>>& UAuraAbilitySystemComponent::GetGameplayEffectHandle() {
 	return GameplayEffectHandle;
-}
-
-void UAuraAbilitySystemComponent::AddCharacterAbilities(const TArray<FAbilityInfo>& StartupAbilities) {
-	for (const FAbilityInfo& AbilityInfo : StartupAbilities) {
-		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityInfo.AbilityClass, AbilityInfo.Level);
-		if (const UAuraGameplayAbility* AuraAbility = Cast<UAuraGameplayAbility>(AbilitySpec.Ability)) {
-			AbilitySpec.DynamicAbilityTags.AddTag(AuraAbility->StartupInputTag);
-			GiveAbility(AbilitySpec);
-			//GiveAbilityAndActivateOnce(AbilitySpec);
-		}
-	}
 }
 
 void UAuraAbilitySystemComponent::AbilityActorInfoSet() {
