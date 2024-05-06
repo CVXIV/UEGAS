@@ -7,6 +7,8 @@
 #include "UObject/Interface.h"
 #include "CombatInterface.generated.h"
 
+enum ECharacterClass : uint8;
+
 class UNiagaraSystem;
 
 USTRUCT(BlueprintType)
@@ -33,7 +35,7 @@ class AURA_API ICombatInterface {
 	GENERATED_BODY()
 
 public:
-	virtual int32 GetPlayerLevel();
+	virtual int32 GetPlayerLevel() const;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FVector GetCombatSocketLocation(const FGameplayTag& MontageTag);
@@ -60,4 +62,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	UNiagaraSystem* GetBloodEffect() const;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	ECharacterClass GetCharacterClass() const;
 };

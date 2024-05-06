@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "GameFramework/Character.h"
 #include "Interaction/CombatInterface.h"
 #include "AuraCharacterBase.generated.h"
@@ -46,6 +47,8 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void Die() override;
 
+	virtual ECharacterClass GetCharacterClass_Implementation() const override;
+
 	virtual FTaggedMontage GetAttackMontage_Random_Implementation() const override;
 
 	virtual FTaggedMontage GetAttackMontageByTag_Implementation(const FGameplayTag& Tag) const override;
@@ -65,10 +68,9 @@ protected:
 
 	virtual void InitAbilityActorInfo();
 
-	void ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffect, float Level) const;
+	void ApplyEffectToSelf(const TSubclassOf<UGameplayEffect>& GameplayEffect, float Level) const;
 
 	virtual void InitializeDefaultAttributes() const;
-
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAuraAbilitySystemComponent> AuraAbilitySystemComponent;
@@ -110,4 +112,7 @@ protected:
 	TArray<FTaggedMontage> AttackMontage;
 
 	bool bDead = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Class Defaults", meta = (AllowPrivateAccess = "true"))
+	TEnumAsByte<ECharacterClass> CharacterClass = Warrior;
 };

@@ -29,7 +29,7 @@ public:
 
 	virtual void UnHighlightActor() override;
 
-	virtual int32 GetPlayerLevel() override;
+	virtual int32 GetPlayerLevel() const override;
 
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
 
@@ -66,6 +66,10 @@ protected:
 	UPROPERTY(BlueprintAssignable)
 	FOnAttributeChangedSignature OnMaxHealthInitialize;
 
+	bool bHealthHasBroadcast = false;
+
+	bool bMaxHealthHasBroadcast = false;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TObjectPtr<UAnimMontage> HitReactMontage;
 
@@ -93,9 +97,6 @@ private:
 	// Enemy的Level不需要网络传递，因为涉及到的关键计算只在服务器完成，没有必要传递到客户端
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Class Defaults", meta = (AllowPrivateAccess = "true"))
 	int32 Level;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Class Defaults", meta = (AllowPrivateAccess = "true"))
-	TEnumAsByte<ECharacterClass> CharacterClass = Warrior;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TObjectPtr<UMaterialInstance> DissolveMaterial;

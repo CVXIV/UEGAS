@@ -150,6 +150,18 @@ bool UAuraAbilitySystemLibrary::TryActivateRandomAbilityByTag(UAbilitySystemComp
 	return AuraAbilitySystemComponent->TryActivateRandomAbilityByTag(GameplayTagContainer, bAllowRemoteActivation);
 }
 
+float UAuraAbilitySystemLibrary::GetXPForCharacterClassAndLevel(const UObject* WorldContext, ECharacterClass CharacterClass, int32 Level) {
+	const AAuraGameModeBase* AuraGameModeBase = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContext));
+	if (!AuraGameModeBase) {
+		return 0;
+	}
+
+	UCharacterClassInfo* CharacterClassInfo = AuraGameModeBase->CharacterClassInfo;
+	check(CharacterClassInfo)
+	const FCharacterClassDefaultInfo& CharacterClassDefaultInfo = CharacterClassInfo->GetClassDefaultInfo(CharacterClass);
+	return CharacterClassDefaultInfo.XPReward.GetValueAtLevel(Level);
+}
+
 FGameplayTag UAuraAbilitySystemLibrary::GetAuraAbilityTagFromAbility(const UGameplayAbility* GameplayAbility) {
 	for (const FGameplayTag& GameplayTag : GameplayAbility->AbilityTags) {
 		if (GameplayTag.MatchesTag(FGameplayTag::RequestGameplayTag("Ability"))) {

@@ -63,6 +63,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|GameplayEffects")
 	static bool TryActivateRandomAbilityByTag(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayTagContainer, bool bAllowRemoteActivation);
 
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|XP")
+	static float GetXPForCharacterClassAndLevel(const UObject* WorldContext, ECharacterClass CharacterClass, int32 Level);
+
 	static FGameplayTag GetAuraAbilityTagFromAbility(const UGameplayAbility* GameplayAbility);
 
 	static FGameplayTag GetInputTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);

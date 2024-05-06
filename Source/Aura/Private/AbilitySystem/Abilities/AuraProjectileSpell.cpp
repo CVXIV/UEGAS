@@ -18,8 +18,8 @@ void UAuraProjectileSpell::Server_SpawnProjectile_Implementation(const FVector& 
 	check(DamageEffectClass)
 
 	const FVector SocketLocation = ICombatInterface::Execute_GetCombatSocketLocation(GetAvatarActorFromActorInfo(), Tag);
-	FRotator Rotation = (ProjectileTargetLocation - SocketLocation).Rotation();
-	Rotation.Pitch = 0.f;
+	const FRotator Rotation = (ProjectileTargetLocation - SocketLocation).Rotation();
+	//Rotation.Pitch = 0.f;
 
 	FTransform SpawnTransform;
 	SpawnTransform.SetLocation(SocketLocation);

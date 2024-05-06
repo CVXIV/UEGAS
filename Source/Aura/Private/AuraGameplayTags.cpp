@@ -72,5 +72,7 @@ void FAuraGameplayTags::InitializeNativeGameplayTags() {
 
 	S_GameplayTags.Cooldown_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.FireBolt"));
 
+	S_GameplayTags.Attributes_Meta_IncomingXP = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Meta.IncomingXP"));
+
 	S_GameplayTags.S_OnGameplayTagsInitialized.Broadcast();
 }

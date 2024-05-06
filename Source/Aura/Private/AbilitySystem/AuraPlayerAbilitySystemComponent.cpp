@@ -17,8 +17,14 @@ void UAuraPlayerAbilitySystemComponent::AddCharacterAbilities(const TArray<FAbil
 		if (const UAuraGameplayAbility* AuraAbility = Cast<UAuraGameplayAbility>(AbilitySpec.Ability)) {
 			AbilitySpec.DynamicAbilityTags.AddTag(AuraAbility->StartupInputTag);
 			GiveAbility(AbilitySpec);
-			//GiveAbilityAndActivateOnce(AbilitySpec);
 		}
+	}
+}
+
+void UAuraPlayerAbilitySystemComponent::AddCharacterPassiveAbilities(const TArray<FAbilityDetail>& StartupPassiveAbilities) {
+	for (const FAbilityDetail& AbilityInfo : StartupPassiveAbilities) {
+		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityInfo.AbilityClass, AbilityInfo.Level);
+		GiveAbilityAndActivateOnce(AbilitySpec);
 	}
 }
 

@@ -40,9 +40,7 @@ void AAuraProjectile::BeginPlay() {
 }
 
 void AAuraProjectile::Destroyed() {
-	// 只有不是服务器且bIsHit为false，才说明是服务器先执行的Overlap
-	if (bIsOverlap && !bIsHit && !HasAuthority()) {
-		// 说明是服务器先Destroy，客户端还没来得及渲染
+	if (bIsOverlap) {
 		OnOverlap();
 	}
 	Super::Destroyed();
@@ -52,20 +50,16 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 	if (OtherActor == GetOwner()) {
 		return;
 	}
-	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
-	OnOverlap();
-	bIsOverlap = true;
 	if (HasAuthority()) {
 		if (UAbilitySystemComponent* Asc = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OtherActor)) {
 			Asc->ApplyGameplayEffectSpecToSelf(*DamageEffectSpecHandle.Data);
 		}
 		Multicast_OnDestroy();
-	} else {
-		bIsHit = true;
 	}
 }
 
 void AAuraProjectile::OnOverlap() const {
+	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
 	if (LoopSoundComponent) {
 		LoopSoundComponent->Stop();

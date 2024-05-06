@@ -104,6 +104,11 @@ public:
 
 	/**/
 
+	/** Meta*/
+	FGameplayTag Attributes_Meta_IncomingXP;
+
+	/**/
+
 	TMap<FGameplayTag, FGameplayTag> DamageTypesToResistance;
 
 	static FOnGameplayTagsInitialized S_OnGameplayTagsInitialized;

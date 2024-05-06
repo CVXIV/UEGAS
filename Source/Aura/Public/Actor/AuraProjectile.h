@@ -54,8 +54,6 @@ private:
 
 	uint8 bIsOverlap : 1;
 
-	uint8 bIsHit : 1;
-
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnDestroy();
 };

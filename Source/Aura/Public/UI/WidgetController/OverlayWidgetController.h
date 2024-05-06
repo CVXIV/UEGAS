@@ -6,6 +6,8 @@
 #include "UI/WidgetController/AuraWidgetController.h"
 #include "OverlayWidgetController.generated.h"
 
+class AAuraPlayerState;
+
 struct FAuraDataAssetAbilityInfoRow;
 
 class UAuraAbilitySystemComponent;
@@ -66,6 +68,12 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
 	FOnAttributeChangedSignature OnMaxManaChanged;
 
+	UPROPERTY(BlueprintAssignable, Category = "GAS|XP")
+	FOnAttributeChangedSignature OnXPPercentageChangedDelegate;
+
+	UPROPERTY(BlueprintAssignable, Category = "GAS|Level")
+	FOnAttributeChangedSignature OnLevelChangedDelegate;
+
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
 	FMessageWidgetRowSignature MessageWidgetRowDelegate;
 
@@ -81,7 +89,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget Data")
 	TObjectPtr<UAuraDataAssetAbilityInfo> AbilityInfo;
 
+	UPROPERTY()
+	TObjectPtr<AAuraPlayerState> AuraPlayerState;
+
 	virtual void InitWidgetController() override;
+
+	void OnXPChanged(uint32 NewXP, uint32 OldXP) const;
+
+	void OnLevelChanged(uint32 NewLevel, uint32 OldLevel) const;
 
 	template <typename T>
 	static T* GetDataTableRowByTag(UDataTable* DataTable, const FGameplayTag& Tag);

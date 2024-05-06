@@ -16,6 +16,8 @@ class AURA_API UAuraPlayerAbilitySystemComponent : public UAuraAbilitySystemComp
 public:
 	void AddCharacterAbilities(const TArray<struct FAbilityDetail>& StartupAbilities);
 
+	void AddCharacterPassiveAbilities(const TArray<struct FAbilityDetail>& StartupPassiveAbilities);
+
 protected:
 	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
 };

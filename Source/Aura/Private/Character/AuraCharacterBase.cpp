@@ -4,20 +4,23 @@
 
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
-#include "Aura/Aura.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 AAuraCharacterBase::AAuraCharacterBase() {
 	PrimaryActorTick.bCanEverTick = false;
-
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_PROJECTILE, ECR_Overlap);
+	
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon");
 	Weapon->SetupAttachment(GetMesh(), FName("WeaponHandSocket"));
 	Weapon->SetGenerateOverlapEvents(false);
+}
+
+void AAuraCharacterBase::BeginPlay() {
+	Super::BeginPlay();
+
+	bDead = false;
 }
 
 UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const {
@@ -50,6 +53,10 @@ AActor* AAuraCharacterBase::GetAvatar_Implementation() {
 	return this;
 }
 
+ECharacterClass AAuraCharacterBase::GetCharacterClass_Implementation() const {
+	return CharacterClass;
+}
+
 FTaggedMontage AAuraCharacterBase::GetAttackMontage_Random_Implementation() const {
 	check(!AttackMontage.IsEmpty())
 	const int Index = FMath::RandRange(0, AttackMontage.Num() - 1);
@@ -75,12 +82,6 @@ void AAuraCharacterBase::Die_Implementation() {
 	OnDie();
 }
 
-void AAuraCharacterBase::BeginPlay() {
-	Super::BeginPlay();
-
-	bDead = false;
-}
-
 void AAuraCharacterBase::OnDie() {
 	bDead = true;
 
@@ -102,7 +103,7 @@ void AAuraCharacterBase::OnDie() {
 void AAuraCharacterBase::InitAbilityActorInfo() {
 }
 
-void AAuraCharacterBase::ApplyEffectToSelf(const TSubclassOf<UGameplayEffect> GameplayEffect, const float Level) const {
+void AAuraCharacterBase::ApplyEffectToSelf(const TSubclassOf<UGameplayEffect>& GameplayEffect, const float Level) const {
 	check(IsValid(AuraAbilitySystemComponent))
 	check(GameplayEffect)
 	FGameplayEffectContextHandle GameplayEffectContextHandle = AuraAbilitySystemComponent->MakeEffectContext();

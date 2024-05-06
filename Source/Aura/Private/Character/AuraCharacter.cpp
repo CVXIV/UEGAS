@@ -4,15 +4,31 @@
 #include "Character/AuraCharacter.h"
 
 #include "AbilitySystemComponent.h"
-#include "AuraGameplayTags.h"
+#include "NiagaraComponent.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraPlayerAbilitySystemComponent.h"
+#include "AbilitySystem/Data/AuraDataAssetLevelUpInfo.h"
+#include "Aura/Aura.h"
+#include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Player/AuraPlayerController.h"
 #include "Player/AuraPlayerState.h"
 #include "UI/HUD/AuraHUD.h"
 
 AAuraCharacter::AAuraCharacter() {
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::Type::QueryOnly);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_PROJECTILE, ECR_Overlap);
+	GetCapsuleComponent()->SetGenerateOverlapEvents(true);
+	
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECC_PROJECTILE, ECR_Ignore);
+	GetMesh()->SetGenerateOverlapEvents(false);
+	
 	UCharacterMovementComponent* CharacterMovementComponent = GetCharacterMovement();
 	CharacterMovementComponent->bOrientRotationToMovement = true;
 	CharacterMovementComponent->RotationRate = FRotator(0, 400.f, 0);
@@ -23,10 +39,26 @@ AAuraCharacter::AAuraCharacter() {
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
 
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetMesh()->SetSimulatePhysics(false);
-
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	LevelUpNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("LevelUpNiagaraComponent");
+	LevelUpNiagaraComponent->SetupAttachment(GetRootComponent());
+	LevelUpNiagaraComponent->bAutoActivate = false;
+
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>("CameraBoom");
+	CameraBoom->SetupAttachment(GetRootComponent());
+	CameraBoom->SetUsingAbsoluteRotation(true);
+	CameraBoom->bDoCollisionTest = false;
+
+	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>("TopDownCameraComponent");
+	TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	TopDownCameraComponent->bUsePawnControlRotation = false;
+}
+
+void AAuraCharacter::BeginPlay() {
+	Super::BeginPlay();
+
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AAuraCharacter::PossessedBy(AController* NewController) {
@@ -37,9 +69,7 @@ void AAuraCharacter::PossessedBy(AController* NewController) {
 	AddCharacterAbilities();
 }
 
-int32 AAuraCharacter::GetPlayerLevel() {
-	const AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
-	check(AuraPlayerState)
+int32 AAuraCharacter::GetPlayerLevel() const {
 	return AuraPlayerState->GetPlayerLevel();
 }
 
@@ -49,22 +79,39 @@ void AAuraCharacter::OnRep_PlayerState() {
 	InitAbilityActorInfo();
 }
 
+void AAuraCharacter::AddToXP(uint32 InXP) {
+	AuraPlayerState->AddToXP(InXP);
+}
+
+uint32 AAuraCharacter::FindLevelForXP(uint32 XP) {
+	return AuraPlayerState->DataAssetLevelUpInfo->FindLevelForXP(XP);
+}
+
 void AAuraCharacter::AddCharacterAbilities() const {
 	check(IsValid(AuraPlayerAbilitySystemComponent))
 	if (!HasAuthority()) { return; }
 
 	AuraPlayerAbilitySystemComponent->AddCharacterAbilities(StartupAbilities);
+	AuraPlayerAbilitySystemComponent->AddCharacterPassiveAbilities(StartupPassiveAbilities);
 }
 
 void AAuraCharacter::InitAbilityActorInfo() {
-	AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
+	AuraPlayerState = GetPlayerState<AAuraPlayerState>();
 	check(AuraPlayerState)
+
+	AuraPlayerState->OnLevelChangedDelegate.AddLambda([this](uint32, uint32) {
+		const FVector CameraLoc = TopDownCameraComponent->GetComponentLocation();
+		const FVector NiagaraLoc = LevelUpNiagaraComponent->GetComponentLocation();
+		LevelUpNiagaraComponent->SetWorldRotation((CameraLoc - NiagaraLoc).Rotation());
+		LevelUpNiagaraComponent->Activate(true);
+	});
+
 	AuraAbilitySystemComponent = Cast<UAuraAbilitySystemComponent>(AuraPlayerState->GetAbilitySystemComponent());
 	check(AuraAbilitySystemComponent)
 
 	AuraPlayerAbilitySystemComponent = Cast<UAuraPlayerAbilitySystemComponent>(AuraPlayerState->GetAbilitySystemComponent());
 	check(AuraPlayerAbilitySystemComponent)
-	
+
 	AuraAbilitySystemComponent->InitAbilityActorInfo(AuraPlayerState, this);
 	AuraAbilitySystemComponent->AbilityActorInfoSet();
 	AttributeSet = AuraPlayerState->GetAttributeSet();

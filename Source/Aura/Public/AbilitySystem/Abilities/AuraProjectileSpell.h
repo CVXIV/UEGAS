@@ -21,7 +21,6 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Projectile")
 	void SpawnProjectile(const FVector& ProjectileTargetLocation, const FGameplayTag& Tag);
 
-private:
 	UFUNCTION(Server, Reliable)
 	void Server_SpawnProjectile(const FVector& ProjectileTargetLocation, const FGameplayTag& Tag);
 };

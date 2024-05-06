@@ -10,12 +10,20 @@
 #include "Aura/Aura.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "UI/Widget/AuraUserWidget.h"
 
 AAuraEnemy::AAuraEnemy() {
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::Type::QueryOnly);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_PROJECTILE, ECR_Ignore);
+	GetCapsuleComponent()->SetGenerateOverlapEvents(false);
+	
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	GetMesh()->SetCollisionResponseToChannel(ECC_PROJECTILE, ECR_Overlap);
 	GetMesh()->SetGenerateOverlapEvents(true);
 
 	Weapon->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
@@ -52,7 +60,7 @@ void AAuraEnemy::UnHighlightActor() {
 	Weapon->SetRenderCustomDepth(false);
 }
 
-int32 AAuraEnemy::GetPlayerLevel() {
+int32 AAuraEnemy::GetPlayerLevel() const {
 	return Level;
 }
 
@@ -92,8 +100,6 @@ void AAuraEnemy::BeginPlay() {
 
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 
-	InitAbilityActorInfo();
-
 	UAuraAbilitySystemLibrary::GiveStartupAbilities(this, AuraAbilitySystemComponent, CharacterClass);
 
 	UAuraUserWidget* AuraUserWidget = CastChecked<UAuraUserWidget>(HealthBar->GetUserWidgetObject());
@@ -101,11 +107,22 @@ void AAuraEnemy::BeginPlay() {
 
 	const UAuraAttributeSet* AuraAttributeSet = CastChecked<UAuraAttributeSet>(AttributeSet);
 	AuraAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAttributeSet->GetHealthAttribute()).AddLambda([this](const FOnAttributeChangeData& Data) {
-		OnHealthChanged.Broadcast(Data.NewValue);
+		if (bHealthHasBroadcast) {
+			OnHealthChanged.Broadcast(Data.NewValue);
+		} else {
+			OnHealthInitialize.Broadcast(Data.NewValue);
+			bHealthHasBroadcast = true;
+		}
 	});
 
+	// 目前客户端对应的Data.NewValue为0（为BaseValue），服务器端正常（为CurrentValue），为兼容客户端，使用Data.Attribute.GetGameplayAttributeData(AttributeSet)->GetCurrentValue()
 	AuraAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAttributeSet->GetMaxHealthAttribute()).AddLambda([this](const FOnAttributeChangeData& Data) {
-		OnMaxHealthChanged.Broadcast(Data.NewValue);
+		if (bMaxHealthHasBroadcast) {
+			OnMaxHealthChanged.Broadcast(Data.Attribute.GetGameplayAttributeData(AttributeSet)->GetCurrentValue());
+		} else {
+			OnMaxHealthInitialize.Broadcast(Data.Attribute.GetGameplayAttributeData(AttributeSet)->GetCurrentValue());
+			bMaxHealthHasBroadcast = true;
+		}
 	});
 
 	AuraAbilitySystemComponent->RegisterGameplayTagEvent(FAuraGameplayTags::Get().Action_HitReact, EGameplayTagEventType::NewOrRemoved).AddLambda([this](const FGameplayTag Tag, int32 NewCount) {
@@ -116,8 +133,7 @@ void AAuraEnemy::BeginPlay() {
 		}
 	});
 
-	OnHealthInitialize.Broadcast(AuraAttributeSet->GetHealth());
-	OnMaxHealthInitialize.Broadcast(AuraAttributeSet->GetMaxHealth());
+	InitAbilityActorInfo();
 }
 
 void AAuraEnemy::InitAbilityActorInfo() {
