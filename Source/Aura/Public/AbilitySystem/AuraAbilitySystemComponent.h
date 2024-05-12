@@ -6,6 +6,10 @@
 #include "AbilitySystemComponent.h"
 #include "AuraAbilitySystemComponent.generated.h"
 
+struct FAuraGameplayEffectSpec;
+
+struct FAuraGameplayEffectSpecHandle;
+
 DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTag, const FGameplayTagContainer&);
 
 UCLASS()
@@ -29,9 +33,14 @@ public:
 
 	bool TryActivateRandomAbilityByTag(const FGameplayTagContainer& GameplayTagContainer, bool bAllowRemoteActivation);
 
+	void UpgradeAttribute(const FGameplayTag& AttributeTag);
+
 protected:
 	UFUNCTION(Client, Reliable)
 	void ClientEffectApplied(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayEffectSpec& GameplayEffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle);
+
+	UFUNCTION(Server, Reliable)
+	void ServerUpgradeAttribute(const FGameplayTag& AttributeTag);
 
 private:
 	TMap<TSubclassOf<UGameplayEffect>, int32> GameplayEffectDenyCount;

@@ -23,12 +23,12 @@ AAuraCharacter::AAuraCharacter() {
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_PROJECTILE, ECR_Overlap);
 	GetCapsuleComponent()->SetGenerateOverlapEvents(true);
-	
+
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECC_PROJECTILE, ECR_Ignore);
 	GetMesh()->SetGenerateOverlapEvents(false);
-	
+
 	UCharacterMovementComponent* CharacterMovementComponent = GetCharacterMovement();
 	CharacterMovementComponent->bOrientRotationToMovement = true;
 	CharacterMovementComponent->RotationRate = FRotator(0, 400.f, 0);
@@ -83,8 +83,24 @@ void AAuraCharacter::AddToXP(uint32 InXP) {
 	AuraPlayerState->AddToXP(InXP);
 }
 
+void AAuraCharacter::AddToAttributePoints(int32 InAttributePoints) {
+	AuraPlayerState->AddToAttributePoints(InAttributePoints);
+}
+
+void AAuraCharacter::AddToSpellPoints(int32 InSpellPoints) {
+	AuraPlayerState->AddToSpellPoints(InSpellPoints);
+}
+
 uint32 AAuraCharacter::FindLevelForXP(uint32 XP) {
-	return AuraPlayerState->DataAssetLevelUpInfo->FindLevelForXP(XP);
+	return AuraPlayerState->DataAssetLevelUpInfo->FindLevelForXp(XP);
+}
+
+uint32 AAuraCharacter::GetAttributePoints() const {
+	return AuraPlayerState->GetAttributePoints();
+}
+
+uint32 AAuraCharacter::GetSpellPoints() const {
+	return AuraPlayerState->GetSpellPoints();
 }
 
 void AAuraCharacter::AddCharacterAbilities() const {

@@ -28,5 +28,5 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FDataAssetLevelUpInfoRow> LevelUpInfo;
 
-	uint32 FindLevelForXP(uint32 XP);
+	uint32 FindLevelForXp(uint32 XP);
 };

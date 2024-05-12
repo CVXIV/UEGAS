@@ -3,8 +3,9 @@
 
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 
-#include "AuraGameplayTags.h"
-#include "AbilitySystem/AuraAbilitySystemLibrary.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "GameplayCueManager.h"
+#include "Interaction/PlayerInterface.h"
 #include "UI/WidgetController/OverlayWidgetController.h"
 
 UAuraAbilitySystemComponent::UAuraAbilitySystemComponent() {
@@ -56,6 +57,24 @@ bool UAuraAbilitySystemComponent::TryActivateRandomAbilityByTag(const FGameplayT
 	}
 
 	return bSuccess;
+}
+
+void UAuraAbilitySystemComponent::UpgradeAttribute(const FGameplayTag& AttributeTag) {
+	if (const IPlayerInterface* PlayerInterface = Cast<IPlayerInterface>(GetAvatarActor())) {
+		if (PlayerInterface->GetAttributePoints() > 0) {
+			ServerUpgradeAttribute(AttributeTag);
+		}
+	}
+}
+
+void UAuraAbilitySystemComponent::ServerUpgradeAttribute_Implementation(const FGameplayTag& AttributeTag) {
+	FGameplayEventData Payload;
+	Payload.EventTag = AttributeTag;
+	Payload.EventMagnitude = 1.f;
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetAvatarActor(), AttributeTag, Payload);
+
+	Cast<IPlayerInterface>(GetAvatarActor())->AddToAttributePoints(-1);
 }
 
 void UAuraAbilitySystemComponent::ClientEffectApplied_Implementation(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayEffectSpec& GameplayEffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle) {

@@ -32,9 +32,20 @@ public:
 
 	virtual void OnRep_PlayerState() override;
 
+	/* IPlayerInterface*/
 	virtual void AddToXP(uint32 InXP) override;
 
+	virtual void AddToAttributePoints(int32 InAttributePoints) override;
+
+	virtual void AddToSpellPoints(int32 InSpellPoints) override;
+
 	virtual uint32 FindLevelForXP(uint32 XP) override;
+
+	virtual uint32 GetAttributePoints() const override;
+
+	virtual uint32 GetSpellPoints() const override;
+
+	/* IPlayerInterface*/
 
 protected:
 	void AddCharacterAbilities() const;

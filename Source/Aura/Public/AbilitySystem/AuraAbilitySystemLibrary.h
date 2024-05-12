@@ -9,6 +9,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AuraAbilitySystemLibrary.generated.h"
 
+struct FAuraGameplayEffectSpecHandle;
+
 struct FGameplayEffectContextHandle;
 
 class UAbilitySystemComponent;
@@ -33,7 +35,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|CharacterClassDefaults")
 	static void GiveStartupAbilities(const UObject* WorldContext, UAbilitySystemComponent* AbilitySystemComponent, ECharacterClass CharacterClass);
-
+	
 	/**
 	 * 返回[0,1)的一个值，其中X>=0
 	 * @param X 

@@ -17,5 +17,13 @@ class AURA_API IPlayerInterface {
 public:
 	virtual void AddToXP(uint32 InXP) = 0;
 
+	virtual void AddToAttributePoints(int32 InAttributePoints) = 0;
+
+	virtual void AddToSpellPoints(int32 InSpellPoints) = 0;
+
 	virtual uint32 FindLevelForXP(uint32 XP) = 0;
+
+	virtual uint32 GetAttributePoints() const = 0;
+
+	virtual uint32 GetSpellPoints() const = 0;
 };

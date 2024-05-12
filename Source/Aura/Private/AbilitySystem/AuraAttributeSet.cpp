@@ -85,11 +85,21 @@ void UAuraAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute,
 	Super::PostAttributeChange(Attribute, OldValue, NewValue);
 
 	if (Attribute == GetMaxHealthAttribute()) {
-		NewValue = FMath::Max(NewValue, 0);
-		SetHealth(FMath::Min(NewValue, GetHealth()));
+		if (bTopOffHealth) {
+			SetHealth(GetMaxHealth());
+			bTopOffHealth = false;
+		} else {
+			NewValue = FMath::Max(NewValue, 0);
+			SetHealth(FMath::Min(NewValue, GetHealth()));
+		}
 	} else if (Attribute == GetMaxManaAttribute()) {
-		NewValue = FMath::Max(NewValue, 0);
-		SetMana(FMath::Min(NewValue, GetMana()));
+		if (bTopOffMana) {
+			SetMana(GetMaxMana());
+			bTopOffMana = false;
+		} else {
+			NewValue = FMath::Max(NewValue, 0);
+			SetMana(FMath::Min(NewValue, GetMana()));
+		}
 	}
 }
 

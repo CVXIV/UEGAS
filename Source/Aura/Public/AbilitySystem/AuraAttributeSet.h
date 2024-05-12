@@ -54,6 +54,7 @@ using TStaticFuncPtr = typename TBaseStaticDelegateInstance<T, FDefaultDelegateU
 
 UCLASS()
 class AURA_API UAuraAttributeSet : public UAttributeSet {
+private:
 	GENERATED_BODY()
 
 public:
@@ -68,6 +69,14 @@ public:
 	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
 
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+
+	void SetTopOffHealth(bool BTopOffHealth) {
+		this->bTopOffHealth = BTopOffHealth;
+	}
+
+	void SetTopOffMana(bool BTopOffMana) {
+		this->bTopOffMana = BTopOffMana;
+	}
 
 	/**
 	 * Vital Attributes
@@ -256,6 +265,10 @@ public:
 	void OnRep_PhysicalResistance(const FGameplayAttributeData& OldAttributeData) const;
 
 private:
+	bool bTopOffHealth;
+
+	bool bTopOffMana;
+
 	static void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props);
 
 	static void SendXPEvent(const FEffectProperties& Props);

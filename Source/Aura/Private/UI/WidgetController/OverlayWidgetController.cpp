@@ -61,8 +61,8 @@ void UOverlayWidgetController::InitWidgetController() {
 }
 
 void UOverlayWidgetController::OnXPChanged(uint32 NewXP, uint32 OldXP) const {
-	const uint32 Level = AuraPlayerState->DataAssetLevelUpInfo->FindLevelForXP(OldXP);
-	const uint32 NewLevel = AuraPlayerState->DataAssetLevelUpInfo->FindLevelForXP(NewXP);
+	const uint32 Level = AuraPlayerState->DataAssetLevelUpInfo->FindLevelForXp(OldXP);
+	const uint32 NewLevel = AuraPlayerState->DataAssetLevelUpInfo->FindLevelForXp(NewXP);
 	const uint32 QueryLevel = NewLevel != Level ? NewLevel : Level;
 	const uint32 RequirementXP = AuraPlayerState->DataAssetLevelUpInfo->LevelUpInfo[QueryLevel].LevelUpRequirement;
 	const uint32 PreRequirementXP = AuraPlayerState->DataAssetLevelUpInfo->LevelUpInfo[QueryLevel - 1].LevelUpRequirement;
