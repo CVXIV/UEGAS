@@ -19,9 +19,13 @@ class AURA_API IEnemyInterface {
 	GENERATED_BODY()
 
 public:
-	virtual void HighlightActor() =0;
+	virtual void HighlightActor() = 0;
 
-	virtual void UnHighlightActor() =0;
+	virtual void UnHighlightActor() = 0;
+
+	virtual void SetHealthReplicated() = 0;
+
+	virtual void SetMaxHealthReplicated() = 0;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void SetCombatTarget(AActor* InCombatTarget);

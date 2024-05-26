@@ -9,8 +9,8 @@
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "GameFramework/Character.h"
 #include "Interaction/CombatInterface.h"
+#include "Interaction/EnemyInterface.h"
 #include "Interaction/PlayerInterface.h"
-#include "Net/RepLayout.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/AuraPlayerController.h"
 
@@ -159,10 +159,16 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 
 void UAuraAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth) const {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, Health, OldHealth)
+	if (IEnemyInterface* EnemyInterface = Cast<IEnemyInterface>(GetOwningAbilitySystemComponentChecked()->GetAvatarActor())) {
+		EnemyInterface->SetHealthReplicated();
+	}
 }
 
 void UAuraAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth) const {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, MaxHealth, OldMaxHealth)
+	if (IEnemyInterface* EnemyInterface = Cast<IEnemyInterface>(GetOwningAbilitySystemComponentChecked()->GetAvatarActor())) {
+		EnemyInterface->SetMaxHealthReplicated();
+	}
 }
 
 void UAuraAttributeSet::OnRep_Mana(const FGameplayAttributeData& OldMana) const {

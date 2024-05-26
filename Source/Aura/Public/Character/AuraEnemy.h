@@ -25,6 +25,14 @@ class AURA_API AAuraEnemy : public AAuraCharacterBase, public IEnemyInterface {
 public:
 	AAuraEnemy();
 
+	virtual void SetHealthReplicated() override {
+		bHealthReplicated = true;
+	}
+
+	virtual void SetMaxHealthReplicated() override {
+		bMaxHealthReplicated = true;
+	}
+
 	virtual void HighlightActor() override;
 
 	virtual void UnHighlightActor() override;
@@ -54,21 +62,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UWidgetComponent> HealthBar;
 
-	UPROPERTY(BlueprintAssignable)
-	FOnAttributeChangedSignature OnHealthChanged;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnAttributeChangedSignature OnMaxHealthChanged;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnAttributeChangedSignature OnHealthInitialize;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnAttributeChangedSignature OnMaxHealthInitialize;
-
 	bool bHealthHasBroadcast = false;
 
 	bool bMaxHealthHasBroadcast = false;
+
+	bool bHealthReplicated = false;
+
+	bool bMaxHealthReplicated = false;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TObjectPtr<UAnimMontage> HitReactMontage;
@@ -90,6 +90,18 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<AActor> CombatTarget;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnAttributeChangedSignature OnHealthChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnAttributeChangedSignature OnMaxHealthChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnAttributeChangedSignature OnHealthInitialize;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnAttributeChangedSignature OnMaxHealthInitialize;
 
 private:
 	void Dissolve();

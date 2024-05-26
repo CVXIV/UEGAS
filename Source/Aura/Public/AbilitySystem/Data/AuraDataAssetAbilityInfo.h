@@ -7,6 +7,17 @@
 #include "Engine/DataAsset.h"
 #include "AuraDataAssetAbilityInfo.generated.h"
 
+class UGameplayAbility;
+
+UENUM(BlueprintType)
+enum class EAbilityStatus : uint8 {
+	None,
+	Locked,
+	Eligible,
+	Unlocked,
+	Equipped
+};
+
 USTRUCT(BlueprintType)
 struct FAuraDataAssetAbilityInfoRow {
 	GENERATED_BODY()
@@ -14,8 +25,14 @@ struct FAuraDataAssetAbilityInfoRow {
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	FGameplayTag AbilityTag = FGameplayTag();
 
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	FGameplayTag TypeTag = FGameplayTag();
+
 	UPROPERTY(BlueprintReadOnly)
 	FGameplayTag InputTag = FGameplayTag();
+
+	UPROPERTY(BlueprintReadOnly)
+	EAbilityStatus AbilityStatus = EAbilityStatus::None;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	FGameplayTag CooldownTag = FGameplayTag();
@@ -25,6 +42,12 @@ struct FAuraDataAssetAbilityInfoRow {
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	TObjectPtr<const UMaterialInstance> BackgroundMaterial = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	int32 LevelRequirement = 1;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<UGameplayAbility> Ability;
 };
 
 UCLASS()

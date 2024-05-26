@@ -7,6 +7,8 @@
 #include "Interaction/PlayerInterface.h"
 #include "AuraCharacter.generated.h"
 
+class UAuraDataAssetAbilityInfo;
+
 class USpringArmComponent;
 
 class UCameraComponent;
@@ -47,6 +49,8 @@ public:
 
 	/* IPlayerInterface*/
 
+	const UAuraDataAssetAbilityInfo* GetAbilityInfo() const;
+
 protected:
 	void AddCharacterAbilities() const;
 
@@ -64,6 +68,16 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCameraComponent> TopDownCameraComponent;
+
+	// 客户端用
+	UPROPERTY()
+	TObjectPtr<UAuraDataAssetAbilityInfo> AbilityInfo;
+
+	UFUNCTION(Server, Reliable)
+	void ServerRequestAbilityInfo();
+
+	UFUNCTION(Client, Reliable)
+	void ClientReceiveAbilityInfo(UAuraDataAssetAbilityInfo* InAbilityInfo);
 
 private:
 	virtual void InitAbilityActorInfo() override;

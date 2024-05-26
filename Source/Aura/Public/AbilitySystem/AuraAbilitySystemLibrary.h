@@ -5,9 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Abilities/GameplayAbility.h"
+#include "Data/AuraDataAssetAbilityInfo.h"
 #include "Data/CharacterClassInfo.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AuraAbilitySystemLibrary.generated.h"
+
+class UAuraDataAssetAbilityInfo;
+
+class USpellMenuWidgetController;
 
 struct FAuraGameplayEffectSpecHandle;
 
@@ -24,18 +29,23 @@ class AURA_API UAuraAbilitySystemLibrary : public UBlueprintFunctionLibrary {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|WidgetController")
+	static const UAuraDataAssetAbilityInfo* GetAbilityInfo(const UObject* WorldContext);
+
+	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|WidgetController", meta = (DefaultToSelf = "WorldContext"))
 	static UOverlayWidgetController* GetOverlayWidgetController(const UObject* WorldContext);
 
-	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|WidgetController")
+	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|WidgetController", meta = (DefaultToSelf = "WorldContext"))
 	static UAttributeMenuWidgetController* GetAttributeMenuWidgetController(const UObject* WorldContext);
+
+	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|WidgetController", meta = (DefaultToSelf = "WorldContext"))
+	static USpellMenuWidgetController* GetSpellMenuWidgetController(const UObject* WorldContext);
 
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|CharacterClassDefaults")
 	static void InitializeDefaultAttributes(const UObject* WorldContext, const ECharacterClass& CharacterClass, float Level, UAbilitySystemComponent* AbilitySystemComponent);
 
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|CharacterClassDefaults")
 	static void GiveStartupAbilities(const UObject* WorldContext, UAbilitySystemComponent* AbilitySystemComponent, ECharacterClass CharacterClass);
-	
+
 	/**
 	 * 返回[0,1)的一个值，其中X>=0
 	 * @param X 
@@ -68,7 +78,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|XP")
 	static float GetXPForCharacterClassAndLevel(const UObject* WorldContext, ECharacterClass CharacterClass, int32 Level);
 
-	static FGameplayTag GetAuraAbilityTagFromAbility(const UGameplayAbility* GameplayAbility);
+	static const FGameplayTag& GetAbilityTagFromAbility(const UGameplayAbility* GameplayAbility);
 
 	static FGameplayTag GetInputTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
+
+	static EAbilityStatus GetAbilityStatusFromSpec(const FGameplayAbilitySpec& AbilitySpec);
+
+	static bool IsTagValid(const FGameplayTag& Tag);
 };

@@ -8,10 +8,11 @@
 DECLARE_MULTICAST_DELEGATE(FOnGameplayTagsInitialized);
 
 struct FAuraGameplayTags {
-public:
 	const static FAuraGameplayTags& Get() { return S_GameplayTags; }
 
 	static void InitializeNativeGameplayTags();
+
+	FGameplayTag None;
 
 	FGameplayTag Attribute_Primary_Strength;
 
@@ -63,6 +64,10 @@ public:
 
 	FGameplayTag InputTag_4;
 
+	FGameplayTag InputTag_Passive_1;
+
+	FGameplayTag InputTag_Passive_2;
+
 	FGameplayTag DurationHeal;
 
 	// Combat
@@ -95,7 +100,27 @@ public:
 	/**/
 
 	/** Ability */
+	FGameplayTag Ability_Attack;
+
+	FGameplayTag Ability_Summon;
+
 	FGameplayTag Ability_FireBolt;
+
+	FGameplayTag Ability_Lightning_Electrocute;
+
+	FGameplayTag Ability_Status_Locked;
+
+	FGameplayTag Ability_Status_Eligible;
+
+	FGameplayTag Ability_Status_Unlocked;
+
+	FGameplayTag Ability_Status_Equipped;
+
+	FGameplayTag Ability_Type_None;
+
+	FGameplayTag Ability_Type_Offensive;
+
+	FGameplayTag Ability_Type_Passive;
 
 	/**/
 
@@ -113,7 +138,6 @@ public:
 
 	static FOnGameplayTagsInitialized S_OnGameplayTagsInitialized;
 
-protected:
 private:
 	static FAuraGameplayTags S_GameplayTags;
 };

@@ -6,11 +6,13 @@
 #include "AbilitySystemComponent.h"
 #include "NiagaraComponent.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraPlayerAbilitySystemComponent.h"
 #include "AbilitySystem/Data/AuraDataAssetLevelUpInfo.h"
 #include "Aura/Aura.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Game/AuraGameModeBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Player/AuraPlayerController.h"
@@ -77,6 +79,8 @@ void AAuraCharacter::OnRep_PlayerState() {
 	Super::OnRep_PlayerState();
 
 	InitAbilityActorInfo();
+
+	ServerRequestAbilityInfo();
 }
 
 void AAuraCharacter::AddToXP(uint32 InXP) {
@@ -111,15 +115,30 @@ void AAuraCharacter::AddCharacterAbilities() const {
 	AuraPlayerAbilitySystemComponent->AddCharacterPassiveAbilities(StartupPassiveAbilities);
 }
 
+const UAuraDataAssetAbilityInfo* AAuraCharacter::GetAbilityInfo() const {
+	return AbilityInfo;
+}
+
+void AAuraCharacter::ServerRequestAbilityInfo_Implementation() {
+	const AAuraGameModeBase* GameModeBase = GetWorld()->GetAuthGameMode<AAuraGameModeBase>();
+	ClientReceiveAbilityInfo(GameModeBase->AbilityInfo);
+}
+
+void AAuraCharacter::ClientReceiveAbilityInfo_Implementation(UAuraDataAssetAbilityInfo* InAbilityInfo) {
+	this->AbilityInfo = InAbilityInfo;
+}
+
 void AAuraCharacter::InitAbilityActorInfo() {
 	AuraPlayerState = GetPlayerState<AAuraPlayerState>();
 	check(AuraPlayerState)
 
-	AuraPlayerState->OnLevelChangedDelegate.AddLambda([this](uint32, uint32) {
+	AuraPlayerState->OnLevelChangedDelegate.AddLambda([this](uint32 NewLevel, uint32 OldLevel) {
 		const FVector CameraLoc = TopDownCameraComponent->GetComponentLocation();
 		const FVector NiagaraLoc = LevelUpNiagaraComponent->GetComponentLocation();
 		LevelUpNiagaraComponent->SetWorldRotation((CameraLoc - NiagaraLoc).Rotation());
 		LevelUpNiagaraComponent->Activate(true);
+
+		AuraPlayerAbilitySystemComponent->UpdateAbilityStatus(NewLevel);
 	});
 
 	AuraAbilitySystemComponent = Cast<UAuraAbilitySystemComponent>(AuraPlayerState->GetAbilitySystemComponent());

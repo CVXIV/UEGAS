@@ -114,5 +114,5 @@ protected:
 	bool bDead = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Class Defaults", meta = (AllowPrivateAccess = "true"))
-	TEnumAsByte<ECharacterClass> CharacterClass = Warrior;
+	ECharacterClass CharacterClass = ECharacterClass::Warrior;
 };

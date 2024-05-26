@@ -4,14 +4,28 @@
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 
 #include "AuraAbilityTypes.h"
+#include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAttributeSet.h"
+#include "Character/AuraCharacter.h"
 #include "Game/AuraGameModeBase.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/AuraPlayerState.h"
 #include "UI/HUD/AuraHUD.h"
 #include "UI/WidgetController/AuraWidgetController.h"
+
+const UAuraDataAssetAbilityInfo* UAuraAbilitySystemLibrary::GetAbilityInfo(const UObject* WorldContext) {
+	if (const AAuraGameModeBase* AuraGameModeBase = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContext))) {
+		return AuraGameModeBase->AbilityInfo;
+	}
+
+	if (const AAuraCharacter* Character = Cast<AAuraCharacter>(WorldContext)) {
+		return Character->GetAbilityInfo();
+	}
+	UE_LOG(LogTemp, Error, TEXT("未找到UAuraDataAssetAbilityInfo"))
+	return nullptr;
+}
 
 UOverlayWidgetController* UAuraAbilitySystemLibrary::GetOverlayWidgetController(const UObject* WorldContext) {
 	if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(WorldContext, 0)) {
@@ -34,6 +48,19 @@ UAttributeMenuWidgetController* UAuraAbilitySystemLibrary::GetAttributeMenuWidge
 			UAttributeSet* As = PS->GetAttributeSet();
 			const FWidgetControllerParams Params(PlayerController, PS, Asc, As);
 			return AuraHUD->GetAttributeMenuWidgetController(Params);
+		}
+	}
+	return nullptr;
+}
+
+USpellMenuWidgetController* UAuraAbilitySystemLibrary::GetSpellMenuWidgetController(const UObject* WorldContext) {
+	if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(WorldContext, 0)) {
+		if (AAuraHUD* AuraHUD = Cast<AAuraHUD>(PlayerController->GetHUD())) {
+			AAuraPlayerState* PS = PlayerController->GetPlayerState<AAuraPlayerState>();
+			UAbilitySystemComponent* Asc = PS->GetAbilitySystemComponent();
+			UAttributeSet* As = PS->GetAttributeSet();
+			const FWidgetControllerParams Params(PlayerController, PS, Asc, As);
+			return AuraHUD->GetSpellMenuWidgetController(Params);
 		}
 	}
 	return nullptr;
@@ -162,13 +189,13 @@ float UAuraAbilitySystemLibrary::GetXPForCharacterClassAndLevel(const UObject* W
 	return CharacterClassDefaultInfo.XPReward.GetValueAtLevel(Level);
 }
 
-FGameplayTag UAuraAbilitySystemLibrary::GetAuraAbilityTagFromAbility(const UGameplayAbility* GameplayAbility) {
+const FGameplayTag& UAuraAbilitySystemLibrary::GetAbilityTagFromAbility(const UGameplayAbility* GameplayAbility) {
 	for (const FGameplayTag& GameplayTag : GameplayAbility->AbilityTags) {
 		if (GameplayTag.MatchesTag(FGameplayTag::RequestGameplayTag("Ability"))) {
 			return GameplayTag;
 		}
 	}
-	return FGameplayTag();
+	return FAuraGameplayTags::Get().None;
 }
 
 FGameplayTag UAuraAbilitySystemLibrary::GetInputTagFromSpec(const FGameplayAbilitySpec& AbilitySpec) {
@@ -178,4 +205,26 @@ FGameplayTag UAuraAbilitySystemLibrary::GetInputTagFromSpec(const FGameplayAbili
 		}
 	}
 	return FGameplayTag();
+}
+
+EAbilityStatus UAuraAbilitySystemLibrary::GetAbilityStatusFromSpec(const FGameplayAbilitySpec& AbilitySpec) {
+	for (const FGameplayTag& GameplayTag : AbilitySpec.DynamicAbilityTags) {
+		if (GameplayTag.MatchesTagExact(FAuraGameplayTags::Get().Ability_Status_Locked)) {
+			return EAbilityStatus::Locked;
+		}
+		if (GameplayTag.MatchesTagExact(FAuraGameplayTags::Get().Ability_Status_Eligible)) {
+			return EAbilityStatus::Eligible;
+		}
+		if (GameplayTag.MatchesTagExact(FAuraGameplayTags::Get().Ability_Status_Unlocked)) {
+			return EAbilityStatus::Unlocked;
+		}
+		if (GameplayTag.MatchesTagExact(FAuraGameplayTags::Get().Ability_Status_Equipped)) {
+			return EAbilityStatus::Equipped;
+		}
+	}
+	return EAbilityStatus::None;
+}
+
+bool UAuraAbilitySystemLibrary::IsTagValid(const FGameplayTag& Tag) {
+	return Tag.IsValid() && !FAuraGameplayTags::Get().None.MatchesTagExact(Tag);
 }

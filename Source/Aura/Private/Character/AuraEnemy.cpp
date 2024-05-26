@@ -21,7 +21,7 @@ AAuraEnemy::AAuraEnemy() {
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_PROJECTILE, ECR_Ignore);
 	GetCapsuleComponent()->SetGenerateOverlapEvents(false);
-	
+
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	GetMesh()->SetCollisionResponseToChannel(ECC_PROJECTILE, ECR_Overlap);
 	GetMesh()->SetGenerateOverlapEvents(true);
@@ -106,6 +106,19 @@ void AAuraEnemy::BeginPlay() {
 	AuraUserWidget->SetWidgetController(this);
 
 	const UAuraAttributeSet* AuraAttributeSet = CastChecked<UAuraAttributeSet>(AttributeSet);
+
+	// 客户端适配
+	if (bHealthReplicated) {
+		OnHealthInitialize.Broadcast(AuraAttributeSet->GetHealth());
+		bHealthHasBroadcast = true;
+	}
+
+	// 客户端适配
+	if (bMaxHealthReplicated) {
+		OnMaxHealthInitialize.Broadcast(AuraAttributeSet->GetMaxHealth());
+		bMaxHealthHasBroadcast = true;
+	}
+
 	AuraAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAttributeSet->GetHealthAttribute()).AddLambda([this](const FOnAttributeChangeData& Data) {
 		if (bHealthHasBroadcast) {
 			OnHealthChanged.Broadcast(Data.NewValue);

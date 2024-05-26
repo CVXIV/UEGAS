@@ -7,7 +7,7 @@
 #include "UObject/Interface.h"
 #include "CombatInterface.generated.h"
 
-enum ECharacterClass : uint8;
+enum class ECharacterClass : uint8;
 
 class UNiagaraSystem;
 

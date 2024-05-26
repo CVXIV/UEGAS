@@ -81,5 +81,5 @@ void AAuraPlayerState::OnRep_AttributePoints(uint32 OldValue) const {
 }
 
 void AAuraPlayerState::OnRep_SpellPoints(uint32 OldValue) const {
-	OnAttributePointsChangedDelegate.Broadcast(SpellPoints, OldValue);
+	OnSpellPointsChangedDelegate.Broadcast(SpellPoints, OldValue);
 }

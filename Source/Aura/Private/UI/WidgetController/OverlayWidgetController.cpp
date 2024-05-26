@@ -6,7 +6,7 @@
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
-#include "AbilitySystem/Data/AuraDataAssetAbilityInfo.h"
+#include "AbilitySystem/AuraPlayerAbilitySystemComponent.h"
 #include "AbilitySystem/Data/AuraDataAssetLevelUpInfo.h"
 #include "Player/AuraPlayerState.h"
 
@@ -41,23 +41,9 @@ void UOverlayWidgetController::BindCallbacksToDependencies() {
 				}
 			}
 		});
-	}
-}
 
-void UOverlayWidgetController::OnAbilityGiven(const FGameplayAbilitySpec& AbilitySpec) const {
-	if (IsValid(AbilitySpec.Ability)) {
-		const FGameplayTag AbilityTag = UAuraAbilitySystemLibrary::GetAuraAbilityTagFromAbility(AbilitySpec.Ability);
-		if (AbilityTag.IsValid()) {
-			FAuraDataAssetAbilityInfoRow AbilityInfoRow = AbilityInfo->FindAbilityInfoForTag(AbilityTag);
-			AbilityInfoRow.InputTag = UAuraAbilitySystemLibrary::GetInputTagFromSpec(AbilitySpec);
-			AbilityGivenDelegate.Broadcast(AbilityInfoRow);
-		}
+		PlayerAbilitySystemComponent->AbilityEquippedDelegate.AddUObject(this, &UOverlayWidgetController::OnAbilityEquipped);
 	}
-}
-
-void UOverlayWidgetController::InitWidgetController() {
-	Super::InitWidgetController();
-	AuraPlayerState = Cast<AAuraPlayerState>(PlayerState);
 }
 
 void UOverlayWidgetController::OnXPChanged(uint32 NewXP, uint32 OldXP) const {
@@ -72,4 +58,17 @@ void UOverlayWidgetController::OnXPChanged(uint32 NewXP, uint32 OldXP) const {
 
 void UOverlayWidgetController::OnLevelChanged(uint32 NewLevel, uint32 OldLevel) const {
 	OnLevelChangedDelegate.Broadcast(NewLevel);
+}
+
+void UOverlayWidgetController::OnAbilityEquipped(const FGameplayTag& AbilityTag, const FGameplayTag& Slot, const FGameplayTag& PreSlot) const {
+	// 该广播的作用是清空之前的输入信息
+	FAuraDataAssetAbilityInfoRow PreAbilityInfoRow;
+	PreAbilityInfoRow.AbilityStatus = EAbilityStatus::Unlocked;
+	PreAbilityInfoRow.InputTag = PreSlot;
+	AbilityChangeDelegate.Broadcast(PreAbilityInfoRow);
+
+	FAuraDataAssetAbilityInfoRow NewAbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(AbilitySystemComponent->GetAvatarActor())->FindAbilityInfoForTag(AbilityTag);
+	NewAbilityInfo.AbilityStatus = EAbilityStatus::Equipped;
+	NewAbilityInfo.InputTag = Slot;
+	AbilityChangeDelegate.Broadcast(NewAbilityInfo);
 }

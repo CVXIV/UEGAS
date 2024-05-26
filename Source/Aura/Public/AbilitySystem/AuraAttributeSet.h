@@ -265,9 +265,9 @@ public:
 	void OnRep_PhysicalResistance(const FGameplayAttributeData& OldAttributeData) const;
 
 private:
-	bool bTopOffHealth;
+	bool bTopOffHealth = false;
 
-	bool bTopOffMana;
+	bool bTopOffMana = false;
 
 	static void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props);
 

@@ -6,9 +6,19 @@
 #include "AbilitySystemComponent.h"
 #include "AuraWidgetController.generated.h"
 
+class UAuraPlayerAbilitySystemComponent;
+
+class AAuraPlayerState;
+
+class UAuraDataAssetAbilityInfo;
+
 class UAuraAttributeSet;
 
 class UAbilitySystemComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDynamicAbilityChange, const FAuraDataAssetAbilityInfoRow&, AbilityInfo);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStateChangedSignature, int32, NewValue);
 
 USTRUCT(BlueprintType)
 struct FWidgetControllerParams {
@@ -48,6 +58,11 @@ public:
 protected:
 	virtual void InitWidgetController();
 
+	virtual void OnAbilityChange(const FGameplayAbilitySpec& AbilitySpec);
+
+	UPROPERTY(BlueprintAssignable, Category = "GAS|Abilitiy")
+	FDynamicAbilityChange AbilityChangeDelegate;
+
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<APlayerController> PlayerController;
 
@@ -58,5 +73,14 @@ protected:
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
+	TObjectPtr<UAuraPlayerAbilitySystemComponent> PlayerAbilitySystemComponent;
+
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<UAuraAttributeSet> AuraAttributeSet;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget Data")
+	TObjectPtr<UAuraDataAssetAbilityInfo> AbilityInfo;
+
+	UPROPERTY()
+	TObjectPtr<AAuraPlayerState> AuraPlayerState;
 };
