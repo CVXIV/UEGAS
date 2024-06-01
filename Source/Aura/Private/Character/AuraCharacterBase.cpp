@@ -4,22 +4,28 @@
 
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "AbilitySystem/DeBuff/DeBuffNiagaraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 AAuraCharacterBase::AAuraCharacterBase() {
 	PrimaryActorTick.bCanEverTick = false;
-	
+
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon");
 	Weapon->SetupAttachment(GetMesh(), FName("WeaponHandSocket"));
 	Weapon->SetGenerateOverlapEvents(false);
+
+	BurnDeBuffNiagaraComponent = CreateDefaultSubobject<UDeBuffNiagaraComponent>("BurnDeBuffNiagaraComponent");
+	BurnDeBuffNiagaraComponent->DeBuffTag = FAuraGameplayTags::Get().DeBuff_Burn;
 }
 
 void AAuraCharacterBase::BeginPlay() {
 	Super::BeginPlay();
 
+	// 不能放在构造函数，否则会绑定失败
+	BurnDeBuffNiagaraComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "Root");
 	bDead = false;
 }
 
@@ -78,8 +84,14 @@ UNiagaraSystem* AAuraCharacterBase::GetBloodEffect_Implementation() const {
 	return BloodEffect;
 }
 
-void AAuraCharacterBase::Die_Implementation() {
+FASCRegisterSignature AAuraCharacterBase::GetOnAscRegisteredDelegate() const {
+	return OnAscRegistered;
+}
+
+void AAuraCharacterBase::Die_Implementation(const FVector& DeathImpulse) {
 	OnDie();
+	Weapon->AddImpulse(DeathImpulse, NAME_None, true);
+	GetMesh()->AddImpulse(DeathImpulse, NAME_None, true);
 }
 
 void AAuraCharacterBase::OnDie() {

@@ -6,14 +6,20 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 
-void UAuraDamageGameplayAbility::CauseDamage(AActor* TargetActor) {
-	const FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(DamageEffectClass, 1.f);
-	for (TTuple<FGameplayTag, FScalableFloat>& Pair : DamageTypes) {
-		const float ScaledDamage = Pair.Value.GetValueAtLevel(GetAbilityLevel());
-		UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(GameplayEffectSpecHandle, Pair.Key, ScaledDamage);
+FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassDefaults(AActor* Instigator, AActor* Target) const {
+	FDamageEffectParams Params;
+	Params.WorldContextObject = GetAvatarActorFromActorInfo();
+	Params.Instigator = Instigator;
+	Params.DamageGameplayEffectClass = DamageEffectClass;
+	Params.SourceAbilitySystemComponent = GetAbilitySystemComponentFromActorInfo();
+	Params.TargetAbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target);
+	for (const TTuple<FGameplayTag, FDamageTypeInfo>& Pair : DamageTypes) {
+		Params.DamageTypesKeys.Add(Pair.Key);
+		Params.DamageTypesValues.Add(Pair.Value);
 	}
-	UAbilitySystemComponent* TargetAsc = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
-	if (IsValid(TargetAsc)) {
-		GetAbilitySystemComponentFromActorInfo()->ApplyGameplayEffectSpecToTarget(*GameplayEffectSpecHandle.Data, TargetAsc);
-	}
+	Params.AbilityLevel = GetAbilityLevel();
+	Params.DeathImpulseMagnitude = DeathImpulseMagnitude * 1000.f;
+	Params.KnockBackForceMagnitude = KnockBackForceMagnitude * 1000.f;
+
+	return Params;
 }

@@ -272,4 +272,8 @@ private:
 	static void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props);
 
 	static void SendXPEvent(const FEffectProperties& Props);
+
+	void HandleIncomingXP(const FEffectProperties& Props);
+
+	void HandleIncomingDamage(const FEffectProperties& Props);
 };

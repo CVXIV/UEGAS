@@ -7,6 +7,22 @@
 
 DECLARE_MULTICAST_DELEGATE(FOnGameplayTagsInitialized);
 
+struct FDeBuffInfo {
+	explicit FDeBuffInfo(const FGameplayTag& DeBuff, const FGameplayTag& InResistanceTag);
+
+	FGameplayTag DeBuffTag;
+
+	FGameplayTag ResistanceTag;
+
+	FGameplayTag DeBuff_Chance;
+
+	FGameplayTag DeBuff_Damage;
+
+	FGameplayTag DeBuff_Frequency;
+
+	FGameplayTag DeBuff_Duration;
+};
+
 struct FAuraGameplayTags {
 	const static FAuraGameplayTags& Get() { return S_GameplayTags; }
 
@@ -88,6 +104,28 @@ struct FAuraGameplayTags {
 
 	/**/
 
+	/** DeBuff*/
+	FGameplayTag DeBuff_Burn;
+
+	FGameplayTag DeBuff_Stun;
+
+	FGameplayTag DeBuff_Arcane;
+
+	FGameplayTag DeBuff_Physical;
+
+	/**/
+
+	/** DeBuff Property*/
+	FName DeBuff_Chance_Name;
+
+	FName DeBuff_Damage_Name;
+
+	FName DeBuff_Frequency_Name;
+
+	FName DeBuff_Duration_Name;
+
+	/**/
+
 	/** Montage*/
 	FGameplayTag Montage_Attack_Weapon;
 
@@ -133,8 +171,7 @@ struct FAuraGameplayTags {
 	FGameplayTag Attributes_Meta_IncomingXP;
 
 	/**/
-
-	TMap<FGameplayTag, FGameplayTag> DamageTypesToResistance;
+	TMap<FGameplayTag, FDeBuffInfo> DamageTypesToDeBuffAndResistance;
 
 	static FOnGameplayTagsInitialized S_OnGameplayTagsInitialized;
 

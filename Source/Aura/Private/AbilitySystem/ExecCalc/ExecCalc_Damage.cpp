@@ -104,15 +104,30 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	EvaluateParameters.SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
 	EvaluateParameters.TargetTags = Spec.CapturedTargetTags.GetAggregatedTags();
 
-	FAuraGameplayEffectContext* Context = static_cast<FAuraGameplayEffectContext*>(Spec.GetContext().Get());
-	// 获取基础伤害
+	FAuraGameplayEffectContext* EffectContext = static_cast<FAuraGameplayEffectContext*>(Spec.GetContext().Get());
+
+	// 获取基础伤害和DeBuff
 	float Damage = 0.f;
 	for (const TTuple<FGameplayTag, float>& Pair : Spec.SetByCallerTagMagnitudes) {
-		const FGameplayEffectAttributeCaptureDefinition& CaptureDefinition = DamageStatics().GetTagsToCaptureDefs()[FAuraGameplayTags::Get().DamageTypesToResistance[Pair.Key]];
-		float ResistanceValue;
-		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(CaptureDefinition, EvaluateParameters, ResistanceValue);
-		const float RealResistanceValue = UAuraAbilitySystemLibrary::Sigmoid_Modify(ResistanceValue);
-		Damage += Pair.Value * (1.f - RealResistanceValue);
+		if (const FDeBuffInfo* DeBuffInfo = FAuraGameplayTags::Get().DamageTypesToDeBuffAndResistance.Find(Pair.Key)) {
+			const FGameplayEffectAttributeCaptureDefinition& CaptureDefinition = DamageStatics().GetTagsToCaptureDefs()[DeBuffInfo->ResistanceTag];
+			// 抗性可以减少此类伤害，也可以降低此类伤害对应的DeBuff产生概率
+			float ResistanceValue;
+			ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(CaptureDefinition, EvaluateParameters, ResistanceValue);
+			const float RealResistanceValue = UAuraAbilitySystemLibrary::Sigmoid_Modify(ResistanceValue);
+			Damage += Pair.Value * (1.f - RealResistanceValue);
+
+			const float DeBuffChance = UAuraAbilitySystemLibrary::Sigmoid_Modify(Spec.GetSetByCallerMagnitude(DeBuffInfo->DeBuff_Chance, false));
+			const float FinalDeBuffChance = DeBuffChance - UAuraAbilitySystemLibrary::Sigmoid_Modify(RealResistanceValue);
+			if (const bool bDeBuff = UAuraAbilitySystemLibrary::ProbabilityCheck(FinalDeBuffChance)) {
+				FGameplayEffectContextHandle EffectContextHandle = Spec.GetContext();
+
+				const float DeBuffDamage = Spec.GetSetByCallerMagnitude(DeBuffInfo->DeBuff_Damage, false);
+				const float DeBuffFrequency = Spec.GetSetByCallerMagnitude(DeBuffInfo->DeBuff_Frequency, false);
+				const float DeBuffDuration = Spec.GetSetByCallerMagnitude(DeBuffInfo->DeBuff_Duration, false);
+				UAuraAbilitySystemLibrary::SetDeBuffProperty(EffectContextHandle, bDeBuff, DeBuffInfo->DeBuffTag, DeBuffDamage, DeBuffFrequency, DeBuffDuration);
+			}
+		}
 	}
 
 	// 首先计算暴击之后的伤害
@@ -127,7 +142,7 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().CriticalHitDamageDef, EvaluateParameters, CriticalHitDamage);
 	const bool bIsCriticalHit = UAuraAbilitySystemLibrary::ProbabilityCheck(FinalCriticalHitChance);
 	Damage = bIsCriticalHit ? 2 * Damage + CriticalHitDamage : Damage;
-	Context->SetIsCriticalHit(bIsCriticalHit);
+	EffectContext->SetIsCriticalHit(bIsCriticalHit);
 
 	float TargetArmor;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().ArmorDef, EvaluateParameters, TargetArmor);
@@ -146,7 +161,7 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	const float RealBlockChance = UAuraAbilitySystemLibrary::Sigmoid_Modify(BlockChance);
 	const bool bIsBlock = UAuraAbilitySystemLibrary::ProbabilityCheck(RealBlockChance);
 	Damage = bIsBlock ? Damage * 0.5f : Damage;
-	Context->SetIsBlockedHit(bIsBlock);
+	EffectContext->SetIsBlockedHit(bIsBlock);
 
 	const FGameplayModifierEvaluatedData EvaluatedData(UAuraAttributeSet::GetIncomingDamageAttribute(), EGameplayModOp::Override, Damage);
 	OutExecutionOutput.AddOutputModifier(EvaluatedData);

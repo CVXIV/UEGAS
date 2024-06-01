@@ -30,6 +30,8 @@ public:
 
 	virtual void PossessedBy(AController* NewController) override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	virtual int32 GetPlayerLevel() const override;
 
 	virtual void OnRep_PlayerState() override;
@@ -70,14 +72,8 @@ protected:
 	TObjectPtr<UCameraComponent> TopDownCameraComponent;
 
 	// 客户端用
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	TObjectPtr<UAuraDataAssetAbilityInfo> AbilityInfo;
-
-	UFUNCTION(Server, Reliable)
-	void ServerRequestAbilityInfo();
-
-	UFUNCTION(Client, Reliable)
-	void ClientReceiveAbilityInfo(UAuraDataAssetAbilityInfo* InAbilityInfo);
 
 private:
 	virtual void InitAbilityActorInfo() override;

@@ -9,6 +9,15 @@ FAuraGameplayTags FAuraGameplayTags::S_GameplayTags;
 
 FOnGameplayTagsInitialized FAuraGameplayTags::S_OnGameplayTagsInitialized;
 
+FDeBuffInfo::FDeBuffInfo(const FGameplayTag& DeBuff, const FGameplayTag& InResistanceTag) {
+	this->DeBuffTag = DeBuff;
+	this->ResistanceTag = InResistanceTag;
+	this->DeBuff_Chance = UGameplayTagsManager::Get().AddNativeGameplayTag(*(DeBuff.GetTagName().ToString() + FAuraGameplayTags::Get().DeBuff_Chance_Name.ToString()));
+	this->DeBuff_Damage = UGameplayTagsManager::Get().AddNativeGameplayTag(*(DeBuff.GetTagName().ToString() + FAuraGameplayTags::Get().DeBuff_Damage_Name.ToString()));
+	this->DeBuff_Duration = UGameplayTagsManager::Get().AddNativeGameplayTag(*(DeBuff.GetTagName().ToString() + FAuraGameplayTags::Get().DeBuff_Duration_Name.ToString()));
+	this->DeBuff_Frequency = UGameplayTagsManager::Get().AddNativeGameplayTag(*(DeBuff.GetTagName().ToString() + FAuraGameplayTags::Get().DeBuff_Frequency_Name.ToString()));
+}
+
 void FAuraGameplayTags::InitializeNativeGameplayTags() {
 	S_GameplayTags.None = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.None"), FString("空"));
 	/**
@@ -56,11 +65,6 @@ void FAuraGameplayTags::InitializeNativeGameplayTags() {
 	S_GameplayTags.Attributes_Resistance_Arcane = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Resistance.Arcane"), FString("Resistance To Arcane Damage"));
 	S_GameplayTags.Attributes_Resistance_Physical = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Resistance.Physical"), FString("Resistance To Physical Damage"));
 
-	S_GameplayTags.DamageTypesToResistance.Add(S_GameplayTags.Damage_Fire, S_GameplayTags.Attributes_Resistance_Fire);
-	S_GameplayTags.DamageTypesToResistance.Add(S_GameplayTags.Damage_Lightning, S_GameplayTags.Attributes_Resistance_Lightning);
-	S_GameplayTags.DamageTypesToResistance.Add(S_GameplayTags.Damage_Arcane, S_GameplayTags.Attributes_Resistance_Arcane);
-	S_GameplayTags.DamageTypesToResistance.Add(S_GameplayTags.Damage_Physical, S_GameplayTags.Attributes_Resistance_Physical);
-
 	S_GameplayTags.Action_HitReact = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Action.HitReact"));
 	S_GameplayTags.Action_Attack = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Action.Attack"));
 
@@ -87,6 +91,29 @@ void FAuraGameplayTags::InitializeNativeGameplayTags() {
 	S_GameplayTags.Cooldown_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.FireBolt"));
 
 	S_GameplayTags.Attributes_Meta_IncomingXP = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Meta.IncomingXP"));
+
+	/**DeBuff*/
+	S_GameplayTags.DeBuff_Burn = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("DeBuff.Burn"));
+
+	S_GameplayTags.DeBuff_Stun = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("DeBuff.Stun"));
+
+	S_GameplayTags.DeBuff_Arcane = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("DeBuff.Arcane"));
+
+	S_GameplayTags.DeBuff_Physical = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("DeBuff.Physical"));
+
+	S_GameplayTags.DeBuff_Chance_Name = FName(".Chance");
+
+	S_GameplayTags.DeBuff_Damage_Name = FName(".Damage");
+
+	S_GameplayTags.DeBuff_Frequency_Name = FName(".Frequency");
+
+	S_GameplayTags.DeBuff_Duration_Name = FName(".Duration");
+
+	// Map
+	S_GameplayTags.DamageTypesToDeBuffAndResistance.Add(S_GameplayTags.Damage_Fire, FDeBuffInfo(S_GameplayTags.DeBuff_Burn, S_GameplayTags.Attributes_Resistance_Fire));
+	S_GameplayTags.DamageTypesToDeBuffAndResistance.Add(S_GameplayTags.Damage_Lightning, FDeBuffInfo(S_GameplayTags.DeBuff_Stun, S_GameplayTags.Attributes_Resistance_Lightning));
+	S_GameplayTags.DamageTypesToDeBuffAndResistance.Add(S_GameplayTags.Damage_Arcane, FDeBuffInfo(S_GameplayTags.DeBuff_Arcane, S_GameplayTags.Attributes_Resistance_Arcane));
+	S_GameplayTags.DamageTypesToDeBuffAndResistance.Add(S_GameplayTags.Damage_Physical, FDeBuffInfo(S_GameplayTags.DeBuff_Physical, S_GameplayTags.Attributes_Resistance_Physical));
 
 	S_GameplayTags.S_OnGameplayTagsInitialized.Broadcast();
 }

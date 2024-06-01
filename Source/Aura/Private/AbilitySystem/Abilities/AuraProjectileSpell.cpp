@@ -13,7 +13,7 @@
 FString UAuraProjectileSpell::GetDescription(int32 Level) const {
 	FString DamageStr;
 	for (auto& Pair : DamageTypes) {
-		const int Damage = Pair.Value.GetValueAtLevel(Level);
+		const int Damage = Pair.Value.Damage.GetValueAtLevel(Level);
 		if (Pair.Key.MatchesTagExact(FAuraGameplayTags::Get().Damage_Fire)) {
 			DamageStr.Append(FString::Printf(TEXT("<Damage>%d </><Default>Fire Damage!</>\n"), Damage));
 		} else if (Pair.Key.MatchesTagExact(FAuraGameplayTags::Get().Damage_Lightning)) {
@@ -51,23 +51,7 @@ void UAuraProjectileSpell::Server_SpawnProjectile_Implementation(const FVector& 
 
 	AAuraProjectile* Projectile = GetWorld()->SpawnActorDeferred<AAuraProjectile>(ProjectileClass, SpawnTransform, GetAvatarActorFromActorInfo(), Cast<APawn>(GetAvatarActorFromActorInfo()), ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
-	const UAbilitySystemComponent* Asc = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetAvatarActorFromActorInfo());
-
-	FGameplayEffectContextHandle EffectContextHandle = Asc->MakeEffectContext();
-	EffectContextHandle.SetAbility(this);
-	EffectContextHandle.AddSourceObject(Projectile);
-	TArray<TWeakObjectPtr<AActor>> Actors;
-	Actors.Add(Projectile);
-	EffectContextHandle.AddActors(Actors);
-	FHitResult HitResult;
-	HitResult.Location = ProjectileTargetLocation;
-	EffectContextHandle.AddHitResult(HitResult);
-
-	const FGameplayEffectSpecHandle SpecHandle = Asc->MakeOutgoingSpec(DamageEffectClass, GetAbilityLevel(), EffectContextHandle);
-	for (auto& Pair : DamageTypes) {
-		UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, Pair.Key, Pair.Value.GetValueAtLevel(GetAbilityLevel()));
-	}
-	Projectile->DamageEffectSpecHandle = SpecHandle;
+	Projectile->DamageEffectParams = MakeDamageEffectParamsFromClassDefaults(Projectile);
 
 	Projectile->FinishSpawning(SpawnTransform);
 }

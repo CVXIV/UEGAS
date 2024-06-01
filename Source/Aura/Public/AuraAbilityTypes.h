@@ -1,13 +1,107 @@
 ﻿#pragma once
 
 #include "GameplayEffectTypes.h"
+#include "ScalableFloat.h"
 #include "AuraAbilityTypes.generated.h"
+
+class UGameplayEffect;
+
+USTRUCT(BlueprintType)
+struct FDamageTypeInfo {
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly)
+	FScalableFloat Damage;
+
+	UPROPERTY(EditDefaultsOnly, meta = (ClampMin = 0))
+	float DeBuffChance = 0;
+
+	UPROPERTY(EditDefaultsOnly, meta = (ClampMin = 0))
+	float DeBuffDamage = 0;
+
+	UPROPERTY(EditDefaultsOnly, meta = (ClampMin = 0))
+	float DeBuffFrequency = 0;
+
+	UPROPERTY(EditDefaultsOnly, meta = (ClampMin = 0))
+	float DeBuffDuration = 0;
+};
+
+USTRUCT()
+struct FDeBuffProperty {
+	GENERATED_BODY()
+	FDeBuffProperty() {
+	}
+
+	FDeBuffProperty(bool bInIsSuccessfulDeBuff, const FGameplayTag& InDeBuff, float InDeBuffDamage, float InDeBuffFrequency, float InDeBuffDuration) {
+		this->bIsSuccessfulDeBuff = bInIsSuccessfulDeBuff;
+		this->DeBuff = InDeBuff;
+		this->DeBuffDamage = InDeBuffDamage;
+		this->DeBuffFrequency = InDeBuffFrequency;
+		this->DeBuffDuration = InDeBuffDuration;
+	}
+
+	UPROPERTY()
+	bool bIsSuccessfulDeBuff = false;
+
+	UPROPERTY()
+	FGameplayTag DeBuff;
+
+	UPROPERTY()
+	float DeBuffDamage = 0;
+
+	UPROPERTY()
+	float DeBuffFrequency = 0;
+
+	UPROPERTY()
+	float DeBuffDuration = 0;
+
+	friend FArchive& operator<<(FArchive& Ar, FDeBuffProperty& DeBuffProperty) {
+		return Ar << DeBuffProperty.bIsSuccessfulDeBuff << DeBuffProperty.DeBuffDamage << DeBuffProperty.DeBuffFrequency << DeBuffProperty.DeBuffDuration;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FDamageEffectParams {
+	GENERATED_BODY()
+
+	FDamageEffectParams() {
+	}
+
+	UPROPERTY()
+	TObjectPtr<UObject> WorldContextObject = nullptr;
+
+	UPROPERTY()
+	TSubclassOf<UGameplayEffect> DamageGameplayEffectClass = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<AActor> Instigator = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UAbilitySystemComponent> SourceAbilitySystemComponent;
+
+	UPROPERTY()
+	TObjectPtr<UAbilitySystemComponent> TargetAbilitySystemComponent;
+
+	UPROPERTY()
+	TArray<FGameplayTag> DamageTypesKeys;
+
+	UPROPERTY()
+	TArray<FDamageTypeInfo> DamageTypesValues;
+
+	UPROPERTY()
+	float AbilityLevel = 1.f;
+
+	UPROPERTY()
+	float DeathImpulseMagnitude = 0;
+
+	UPROPERTY()
+	float KnockBackForceMagnitude = 0;
+};
 
 USTRUCT(BlueprintType)
 struct FAuraGameplayEffectContext : public FGameplayEffectContext {
 	GENERATED_BODY()
 
-public:
 	virtual UScriptStruct* GetScriptStruct() const override {
 		return StaticStruct();
 	}
@@ -30,6 +124,30 @@ public:
 		this->bIsCriticalHit = bInIsCriticalHit;
 	}
 
+	void AddDeBuffInfo(bool bIsSuccessfulDeBuff, const FGameplayTag& InDeBuff, float DeBuffDamage, float DeBuffFrequency, float DeBuffDuration) {
+		this->DeBuffProperties.Add(FDeBuffProperty(bIsSuccessfulDeBuff, InDeBuff, DeBuffDamage, DeBuffFrequency, DeBuffDuration));
+	}
+
+	const TArray<FDeBuffProperty>& GetDeBuffProperties() const {
+		return DeBuffProperties;
+	}
+
+	[[nodiscard]] const FVector& GetDeathImpulse() const {
+		return DeathImpulse;
+	}
+
+	void SetDeathImpulse(const FVector& InDeathImpulse) {
+		this->DeathImpulse = InDeathImpulse;
+	}
+
+	[[nodiscard]] const FVector& GetKnockBackForce() const {
+		return KnockBackForce;
+	}
+
+	void SetKnockBackForce(const FVector& InKnockBackForce) {
+		this->KnockBackForce = InKnockBackForce;
+	}
+
 	/** Creates a copy of this context, used to duplicate for later modifications */
 	virtual FGameplayEffectContext* Duplicate() const override {
 		FAuraGameplayEffectContext* NewContext = new FAuraGameplayEffectContext();
@@ -47,6 +165,15 @@ protected:
 
 	UPROPERTY()
 	bool bIsCriticalHit = false;
+
+	UPROPERTY()
+	TArray<FDeBuffProperty> DeBuffProperties;
+
+	UPROPERTY()
+	FVector DeathImpulse = FVector::ZeroVector;
+
+	UPROPERTY()
+	FVector KnockBackForce = FVector::ZeroVector;
 };
 
 template <>

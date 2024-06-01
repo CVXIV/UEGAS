@@ -153,6 +153,8 @@ void AAuraEnemy::InitAbilityActorInfo() {
 	Super::InitAbilityActorInfo();
 	AuraAbilitySystemComponent->InitAbilityActorInfo(this, this);
 	AuraAbilitySystemComponent->AbilityActorInfoSet();
+	OnAscRegistered.Broadcast(AuraAbilitySystemComponent);
+	
 	InitializeDefaultAttributes();
 }
 

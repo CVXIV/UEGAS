@@ -9,6 +9,8 @@
 #include "Interaction/CombatInterface.h"
 #include "AuraCharacterBase.generated.h"
 
+class UDeBuffNiagaraComponent;
+
 class UGameplayAbility;
 
 class UGameplayEffect;
@@ -45,7 +47,7 @@ public:
 	virtual AActor* GetAvatar_Implementation() override;
 
 	UFUNCTION(NetMulticast, Reliable)
-	virtual void Die() override;
+	virtual void Die(const FVector& DeathImpulse) override;
 
 	virtual ECharacterClass GetCharacterClass_Implementation() const override;
 
@@ -54,6 +56,8 @@ public:
 	virtual FTaggedMontage GetAttackMontageByTag_Implementation(const FGameplayTag& Tag) const override;
 
 	virtual UNiagaraSystem* GetBloodEffect_Implementation() const override;
+
+	virtual FASCRegisterSignature GetOnAscRegisteredDelegate() const override;
 
 	/** Combat Interface*/
 
@@ -111,8 +115,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TArray<FTaggedMontage> AttackMontage;
 
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UDeBuffNiagaraComponent> BurnDeBuffNiagaraComponent;
+
 	bool bDead = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Class Defaults", meta = (AllowPrivateAccess = "true"))
 	ECharacterClass CharacterClass = ECharacterClass::Warrior;
+
+	FASCRegisterSignature OnAscRegistered;
 };

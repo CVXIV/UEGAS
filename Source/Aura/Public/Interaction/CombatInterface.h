@@ -7,6 +7,10 @@
 #include "UObject/Interface.h"
 #include "CombatInterface.generated.h"
 
+class UAbilitySystemComponent;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FASCRegisterSignature, UAbilitySystemComponent*)
+
 enum class ECharacterClass : uint8;
 
 class UNiagaraSystem;
@@ -46,7 +50,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	UAnimMontage* GetHitReactMontage();
 
-	virtual void Die() = 0;
+	virtual void Die(const FVector& DeathImpulse) = 0;
+
+	virtual FASCRegisterSignature GetOnAscRegisteredDelegate() const = 0;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	bool IsDead() const;

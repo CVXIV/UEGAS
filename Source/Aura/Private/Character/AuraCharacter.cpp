@@ -6,7 +6,6 @@
 #include "AbilitySystemComponent.h"
 #include "NiagaraComponent.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
-#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraPlayerAbilitySystemComponent.h"
 #include "AbilitySystem/Data/AuraDataAssetLevelUpInfo.h"
 #include "Aura/Aura.h"
@@ -15,6 +14,7 @@
 #include "Game/AuraGameModeBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "Player/AuraPlayerController.h"
 #include "Player/AuraPlayerState.h"
 #include "UI/HUD/AuraHUD.h"
@@ -69,6 +69,14 @@ void AAuraCharacter::PossessedBy(AController* NewController) {
 	// server
 	InitAbilityActorInfo();
 	AddCharacterAbilities();
+
+	const AAuraGameModeBase* GameModeBase = GetWorld()->GetAuthGameMode<AAuraGameModeBase>();
+	this->AbilityInfo = GameModeBase->AbilityInfo;
+}
+
+void AAuraCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(AAuraCharacter, AbilityInfo, COND_InitialOnly)
 }
 
 int32 AAuraCharacter::GetPlayerLevel() const {
@@ -79,8 +87,6 @@ void AAuraCharacter::OnRep_PlayerState() {
 	Super::OnRep_PlayerState();
 
 	InitAbilityActorInfo();
-
-	ServerRequestAbilityInfo();
 }
 
 void AAuraCharacter::AddToXP(uint32 InXP) {
@@ -119,15 +125,6 @@ const UAuraDataAssetAbilityInfo* AAuraCharacter::GetAbilityInfo() const {
 	return AbilityInfo;
 }
 
-void AAuraCharacter::ServerRequestAbilityInfo_Implementation() {
-	const AAuraGameModeBase* GameModeBase = GetWorld()->GetAuthGameMode<AAuraGameModeBase>();
-	ClientReceiveAbilityInfo(GameModeBase->AbilityInfo);
-}
-
-void AAuraCharacter::ClientReceiveAbilityInfo_Implementation(UAuraDataAssetAbilityInfo* InAbilityInfo) {
-	this->AbilityInfo = InAbilityInfo;
-}
-
 void AAuraCharacter::InitAbilityActorInfo() {
 	AuraPlayerState = GetPlayerState<AAuraPlayerState>();
 	check(AuraPlayerState)
@@ -143,6 +140,7 @@ void AAuraCharacter::InitAbilityActorInfo() {
 
 	AuraAbilitySystemComponent = Cast<UAuraAbilitySystemComponent>(AuraPlayerState->GetAbilitySystemComponent());
 	check(AuraAbilitySystemComponent)
+	OnAscRegistered.Broadcast(AuraAbilitySystemComponent);
 
 	AuraPlayerAbilitySystemComponent = Cast<UAuraPlayerAbilitySystemComponent>(AuraPlayerState->GetAbilitySystemComponent());
 	check(AuraPlayerAbilitySystemComponent)

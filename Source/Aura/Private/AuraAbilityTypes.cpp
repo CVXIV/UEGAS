@@ -30,9 +30,18 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 		if (bIsCriticalHit) {
 			RepBits |= 1 << 8;
 		}
+		if (DeBuffProperties.Num() > 0) {
+			RepBits |= 1 << 9;
+		}
+		if (!DeathImpulse.IsZero()) {
+			RepBits |= 1 << 10;
+		}
+		if (!KnockBackForce.IsZero()) {
+			RepBits |= 1 << 11;
+		}
 	}
 
-	Ar.SerializeBits(&RepBits, 9);
+	Ar.SerializeBits(&RepBits, 12);
 
 	if (RepBits & (1 << 0)) {
 		Ar << Instigator;
@@ -52,7 +61,7 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 	if (RepBits & (1 << 5)) {
 		if (Ar.IsLoading()) {
 			if (!HitResult.IsValid()) {
-				HitResult = TSharedPtr<FHitResult>(new FHitResult());
+				HitResult = MakeShared<FHitResult>();
 			}
 		}
 		HitResult->NetSerialize(Ar, Map, bOutSuccess);
@@ -68,6 +77,15 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 	}
 	if (RepBits & (1 << 8)) {
 		Ar << bIsCriticalHit;
+	}
+	if (RepBits & (1 << 9)) {
+		SafeNetSerializeTArray_Default<31>(Ar, DeBuffProperties);
+	}
+	if (RepBits & (1 << 10)) {
+		DeathImpulse.NetSerialize(Ar, Map, bOutSuccess);
+	}
+	if (RepBits & (1 << 11)) {
+		KnockBackForce.NetSerialize(Ar, Map, bOutSuccess);
 	}
 
 	if (Ar.IsLoading()) {
