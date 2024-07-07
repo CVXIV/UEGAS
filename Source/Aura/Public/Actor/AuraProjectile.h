@@ -21,12 +21,15 @@ public:
 	AAuraProjectile();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovementComponent;
 
 	UPROPERTY(BlueprintReadWrite, Replicated, meta = (ExposeOnSpawn = true))
 	FDamageEffectParams DamageEffectParams;
+
+	UPROPERTY()
+	TObjectPtr<USceneComponent> HomingTargetSceneComponent;
 
 protected:
 	virtual void BeginPlay() override;

@@ -7,8 +7,9 @@
 #include "AbilitySystemComponent.h"
 #include "AuraGameplayTags.h"
 #include "Actor/AuraProjectile.h"
+#include "Character/AuraCharacterBase.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "Interaction/CombatInterface.h"
-
 
 FString UAuraProjectileSpell::GetDescription(int32 Level) const {
 	FString DamageStr;
@@ -37,29 +38,60 @@ void UAuraProjectileSpell::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
-void UAuraProjectileSpell::Server_SpawnProjectile_Implementation(const FVector& ProjectileTargetLocation, const FGameplayTag& Tag) {
+void UAuraProjectileSpell::Server_SpawnProjectile_Implementation(const FVector& ProjectileTargetLocation, AActor* ProjectileTarget, const FGameplayTag& Tag) {
 	check(ProjectileClass)
 	check(DamageEffectClass)
 
 	const FVector SocketLocation = ICombatInterface::Execute_GetCombatSocketLocation(GetAvatarActorFromActorInfo(), Tag);
-	const FRotator Rotation = (ProjectileTargetLocation - SocketLocation).Rotation();
+	const FVector Forward = ProjectileTargetLocation - SocketLocation;
 	//Rotation.Pitch = 0.f;
 
+	const int32 NumProjectiles = FMath::Min(MaxNumProjectiles, GetAbilityLevel());
+	if (NumProjectiles == 1) {
+		SpawnProjectile(ProjectileTargetLocation, SocketLocation, ProjectileTarget, Forward);
+	} else {
+		const float DeltaSpread = ProjectileSpread / (NumProjectiles - 1);
+		const FVector LeftOfSpread = Forward.RotateAngleAxis(-ProjectileSpread * 0.5f, FVector::UpVector);
+		for (int32 i = 0; i < NumProjectiles; ++i) {
+			const FVector Direction = LeftOfSpread.RotateAngleAxis(i * DeltaSpread, FVector::UpVector);
+			SpawnProjectile(ProjectileTargetLocation, SocketLocation, ProjectileTarget, Direction);
+		}
+	}
+}
+
+void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocation, AActor* ProjectileTarget, const FGameplayTag& Tag) {
+	if (GetAvatarActorFromActorInfo()->HasAuthority()) {
+		Server_SpawnProjectile_Implementation(ProjectileTargetLocation, ProjectileTarget, Tag);
+	} else {
+		Server_SpawnProjectile(ProjectileTargetLocation, ProjectileTarget, Tag);
+	}
+}
+
+void UAuraProjectileSpell::SpawnProjectile(const FVector& TargetLocation, const FVector& SpawnedLocation, AActor* ProjectileTarget, const FVector& Direction) const {
 	FTransform SpawnTransform;
-	SpawnTransform.SetLocation(SocketLocation);
-	SpawnTransform.SetRotation(Rotation.Quaternion());
+	SpawnTransform.SetLocation(SpawnedLocation);
+	SpawnTransform.SetRotation(Direction.Rotation().Add(45, 0, 0).Quaternion());
 
 	AAuraProjectile* Projectile = GetWorld()->SpawnActorDeferred<AAuraProjectile>(ProjectileClass, SpawnTransform, GetAvatarActorFromActorInfo(), Cast<APawn>(GetAvatarActorFromActorInfo()), ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
 	Projectile->DamageEffectParams = MakeDamageEffectParamsFromClassDefaults(Projectile);
+	if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(ProjectileTarget)) {
+		if (!ICombatInterface::Execute_IsDead(ProjectileTarget)) {
+			Projectile->ProjectileMovementComponent->HomingTargetComponent = ProjectileTarget->GetRootComponent();
+			CombatInterface->GetOnDiedDelegate().AddWeakLambda(Projectile, [Projectile](const AAuraCharacterBase* Target) {
+				if (IsValid(Projectile)) {
+					Projectile->ProjectileMovementComponent->bIsHomingProjectile = false;
+				}
+			});
+		}
+	} else {
+		Projectile->HomingTargetSceneComponent = NewObject<USceneComponent>(USceneComponent::StaticClass());
+		Projectile->HomingTargetSceneComponent->SetWorldLocation(TargetLocation);
+		Projectile->ProjectileMovementComponent->HomingTargetComponent = Projectile->HomingTargetSceneComponent;
+	}
+	Projectile->ProjectileMovementComponent->bIsHomingProjectile = true;
+	Projectile->ProjectileMovementComponent->ProjectileGravityScale = 1;
+	Projectile->ProjectileMovementComponent->HomingAccelerationMagnitude = FMath::FRandRange(HomingAccelerationMagnitudeMin, HomingAccelerationMagnitudeMax);
 
 	Projectile->FinishSpawning(SpawnTransform);
-}
-
-void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocation, const FGameplayTag& Tag) {
-	if (GetAvatarActorFromActorInfo()->HasAuthority()) {
-		Server_SpawnProjectile_Implementation(ProjectileTargetLocation, Tag);
-	} else {
-		Server_SpawnProjectile(ProjectileTargetLocation, Tag);
-	}
 }

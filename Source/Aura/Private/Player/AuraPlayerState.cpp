@@ -38,10 +38,13 @@ void AAuraPlayerState::AddToXP(uint32 InXP) {
 	const uint32 NewXP = OldXP + InXP;
 	const uint32 NewLevel = DataAssetLevelUpInfo->FindLevelForXp(NewXP);
 	if (NewLevel != Level) {
-		const uint32 AttributePointReward = DataAssetLevelUpInfo->LevelUpInfo[NewLevel - 1].AttributePointReward;
+		uint32 AttributePointReward = 0;
+		uint32 SpellPointReward = 0;
+		for (uint32 StartLevel = Level; StartLevel < NewLevel; ++StartLevel) {
+			AttributePointReward += DataAssetLevelUpInfo->LevelUpInfo[StartLevel].AttributePointReward;
+			SpellPointReward += DataAssetLevelUpInfo->LevelUpInfo[StartLevel].SpellPointReward;
+		}
 		AddToAttributePoints(AttributePointReward);
-
-		const uint32 SpellPointReward = DataAssetLevelUpInfo->LevelUpInfo[NewLevel - 1].SpellPointReward;
 		AddToSpellPoints(SpellPointReward);
 
 		AttributeSet->SetTopOffHealth(true);

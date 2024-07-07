@@ -7,10 +7,12 @@
 #include "EnhancedInputSubsystems.h"
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
+#include "NiagaraFunctionLibrary.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/SplineComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "Input/AuraInputComponent.h"
 #include "Interaction/EnemyInterface.h"
 #include "UI/Widget/AuraFloatTextWidget.h"
@@ -36,6 +38,17 @@ void AAuraPlayerController::PlayerTick(float DeltaTime) {
 }
 
 void AAuraPlayerController::CursorTrace() {
+	if (GetAuraAbilitySystemComponent() && (GetAuraAbilitySystemComponent()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Action_Attack) || GetAuraAbilitySystemComponent()->HasMatchingGameplayTag(FAuraGameplayTags::Get().DeBuff_Stun))) {
+		if (LastActor) {
+			LastActor->UnHighlightActor();
+		}
+		if (ThisActor) {
+			ThisActor->UnHighlightActor();
+		}
+		LastActor = nullptr;
+		ThisActor = nullptr;
+		return;
+	}
 	GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
 	if (HitResult.bBlockingHit) {
 		LastActor = ThisActor;
@@ -73,15 +86,24 @@ void AAuraPlayerController::AutoRunToDestination() {
 }
 
 void AAuraPlayerController::AbilityInputTagPressed(const FGameplayTag InputTag) {
+	if (GetAuraAbilitySystemComponent()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Action_Attack) || GetAuraAbilitySystemComponent()->HasMatchingGameplayTag(FAuraGameplayTags::Get().DeBuff_Stun)) {
+		return;
+	}
 	if (FAuraGameplayTags::Get().InputTag_LMB.MatchesTagExact(InputTag)) {
 		bTargeting = ThisActor != nullptr;
 		if (bTargeting) {
 			bAutoRunning = false;
 		}
 	}
+	if (GetAuraAbilitySystemComponent()) {
+		GetAuraAbilitySystemComponent()->AbilityInputTagPressed(InputTag);
+	}
 }
 
 void AAuraPlayerController::AbilityInputTagReleased(const FGameplayTag InputTag) {
+	if (FAuraGameplayTags::Get().InputTag_LMB.MatchesTagExact(InputTag) && (GetAuraAbilitySystemComponent()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Action_Attack) || GetAuraAbilitySystemComponent()->HasMatchingGameplayTag(FAuraGameplayTags::Get().DeBuff_Stun))) {
+		return;
+	}
 	if (!FAuraGameplayTags::Get().InputTag_LMB.MatchesTagExact(InputTag)) {
 		GetAuraAbilitySystemComponent()->AbilityInputTagReleased(InputTag);
 	} else {
@@ -95,13 +117,13 @@ void AAuraPlayerController::AbilityInputTagReleased(const FGameplayTag InputTag)
 							Spline->ClearSplinePoints();
 							for (const FVector& LocPoint : NavPath->PathPoints) {
 								Spline->AddSplinePoint(LocPoint, ESplineCoordinateSpace::World);
-								DrawDebugSphere(GetWorld(), LocPoint, 8, 8, FColor::Green, false, 3);
 							}
 							CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];
 							bAutoRunning = true;
 						}
 					}
 				}
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ClickNiagaraSystem, CachedDestination);
 			}
 		}
 		FollowTime = 0.f;
@@ -110,6 +132,9 @@ void AAuraPlayerController::AbilityInputTagReleased(const FGameplayTag InputTag)
 }
 
 void AAuraPlayerController::AbilityInputTagHeld(const FGameplayTag InputTag) {
+	if (FAuraGameplayTags::Get().InputTag_LMB.MatchesTagExact(InputTag) && (GetAuraAbilitySystemComponent()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Action_Attack) || GetAuraAbilitySystemComponent()->HasMatchingGameplayTag(FAuraGameplayTags::Get().DeBuff_Stun))) {
+		return;
+	}
 	if (!FAuraGameplayTags::Get().InputTag_LMB.MatchesTagExact(InputTag)) {
 		GetAuraAbilitySystemComponent()->AbilityInputTagHeld(InputTag);
 	} else {
@@ -175,7 +200,10 @@ void AAuraPlayerController::SetupInputComponent() {
 	AuraInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHeld);
 }
 
-void AAuraPlayerController::Move(const struct FInputActionValue& InputActionValue) {
+void AAuraPlayerController::Move(const FInputActionValue& InputActionValue) {
+	if (GetAuraAbilitySystemComponent()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Action_Attack) || GetAuraAbilitySystemComponent()->HasMatchingGameplayTag(FAuraGameplayTags::Get().DeBuff_Stun)) {
+		return;
+	}
 	bAutoRunning = false;
 	const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
 	const FRotator Rotation = GetControlRotation();

@@ -276,10 +276,12 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props) {
 				SendXPEvent(Props);
 			}
 		} else {
-			FGameplayTagContainer TagContainerCancel;
-			TagContainerCancel.AddTag(FAuraGameplayTags::Get().Action_HitReact);
-			Props.TargetAsc->CancelAbilities(&TagContainerCancel);
-			Props.TargetAsc->TryActivateAbilitiesByTag(TagContainerCancel);
+			if (UAuraAbilitySystemLibrary::IsTakeHitReact(Props.EffectContextHandle)) {
+				FGameplayTagContainer TagContainerCancel;
+				TagContainerCancel.AddTag(FAuraGameplayTags::Get().Action_HitReact);
+				Props.TargetAsc->CancelAbilities(&TagContainerCancel);
+				Props.TargetAsc->TryActivateAbilitiesByTag(TagContainerCancel);
+			}
 
 			const FVector& KnockBackForce = UAuraAbilitySystemLibrary::GetKnockBackForce(Props.EffectContextHandle);
 			if (!KnockBackForce.IsZero()) {
@@ -296,6 +298,7 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props) {
 			PlayerController->ClientShowWidget(Props.TargetAvatarActor, LocalIncomingDamage, bIsCriticalHit, bIsBlockedHit);
 		}
 
+		// todo 这里SourceAsc可能已经不存在（被杀死）
 		FGameplayEffectContextHandle EffectContextHandle = Props.SourceAsc->MakeEffectContext();
 		EffectContextHandle.AddSourceObject(Props.SourceAvatarActor);
 
@@ -318,12 +321,14 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props) {
 				GameplayEffect->StackingType = EGameplayEffectStackingType::AggregateByTarget;
 				GameplayEffect->StackLimitCount = 1;
 
-				const int32 Index = GameplayEffect->Modifiers.Num();
-				GameplayEffect->Modifiers.Add(FGameplayModifierInfo());
-				FGameplayModifierInfo& ModifierInfo = GameplayEffect->Modifiers[Index];
-				ModifierInfo.ModifierMagnitude = FScalableFloat(DeBuffProperty.DeBuffDamage);
-				ModifierInfo.ModifierOp = EGameplayModOp::Additive;
-				ModifierInfo.Attribute = GetIncomingDamageAttribute();
+				if (DeBuffProperty.DeBuffDamage > 0) {
+					const int32 Index = GameplayEffect->Modifiers.Num();
+					GameplayEffect->Modifiers.Add(FGameplayModifierInfo());
+					FGameplayModifierInfo& ModifierInfo = GameplayEffect->Modifiers[Index];
+					ModifierInfo.ModifierMagnitude = FScalableFloat(DeBuffProperty.DeBuffDamage);
+					ModifierInfo.ModifierOp = EGameplayModOp::Additive;
+					ModifierInfo.Attribute = GetIncomingDamageAttribute();
+				}
 
 				if (const FGameplayEffectSpec* EffectSpec = new FGameplayEffectSpec(GameplayEffect, EffectContextHandle, 1.f)) {
 					//FAuraGameplayEffectContext* AuraContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get());

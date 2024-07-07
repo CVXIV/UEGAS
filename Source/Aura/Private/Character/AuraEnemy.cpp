@@ -45,6 +45,8 @@ AAuraEnemy::AAuraEnemy() {
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0, 480, 0);
+
+	BaseWalkSpeed = 250.f;
 }
 
 void AAuraEnemy::HighlightActor() {
@@ -153,6 +155,10 @@ void AAuraEnemy::InitAbilityActorInfo() {
 	Super::InitAbilityActorInfo();
 	AuraAbilitySystemComponent->InitAbilityActorInfo(this, this);
 	AuraAbilitySystemComponent->AbilityActorInfoSet();
+	
+	AuraAbilitySystemComponent->RegisterGameplayTagEvent(FAuraGameplayTags::Get().DeBuff_Stun, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AAuraEnemy::StunTagChanged);
+	AuraAbilitySystemComponent->RegisterGameplayTagEvent(FAuraGameplayTags::Get().DeBuff_Burn, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AAuraEnemy::BurnTagChanged);
+	
 	OnAscRegistered.Broadcast(AuraAbilitySystemComponent);
 	
 	InitializeDefaultAttributes();
@@ -168,6 +174,13 @@ void AAuraEnemy::OnDie() {
 
 void AAuraEnemy::InitializeDefaultAttributes() const {
 	UAuraAbilitySystemLibrary::InitializeDefaultAttributes(this, CharacterClass, Level, AuraAbilitySystemComponent);
+}
+
+void AAuraEnemy::StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount) {
+	Super::StunTagChanged(CallbackTag, NewCount);
+	if (AuraAIController) {
+		AuraAIController->GetBlackboardComponent()->SetValueAsBool("Stunned", NewCount > 0);
+	}	
 }
 
 void AAuraEnemy::Dissolve() {

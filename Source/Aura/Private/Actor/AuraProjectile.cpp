@@ -17,6 +17,7 @@
 AAuraProjectile::AAuraProjectile() {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
+	SetReplicatingMovement(true);
 
 	SphereComponent = CreateDefaultSubobject<USphereComponent>("SphereComponent");
 	SetRootComponent(SphereComponent);
@@ -72,6 +73,7 @@ void AAuraProjectile::OnOverlap() const {
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
 	if (LoopSoundComponent) {
 		LoopSoundComponent->Stop();
+		LoopSoundComponent->DestroyComponent();
 	}
 }
 

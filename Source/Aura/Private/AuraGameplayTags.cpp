@@ -87,6 +87,10 @@ void FAuraGameplayTags::InitializeNativeGameplayTags() {
 	S_GameplayTags.Ability_Type_None = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Type.None"));
 	S_GameplayTags.Ability_Type_Offensive = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Type.Offensive"));
 	S_GameplayTags.Ability_Type_Passive = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Type.Passive"));
+	S_GameplayTags.Ability_Passive_HaloOfProtection = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Passive.HaloOfProtection"));
+	S_GameplayTags.Ability_Passive_LifeSiphon = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Passive.LifeSiphon"));
+	S_GameplayTags.Ability_Passive_ManaSiphon = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Passive.ManaSiphon"));
+
 
 	S_GameplayTags.Cooldown_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.FireBolt"));
 
@@ -109,11 +113,22 @@ void FAuraGameplayTags::InitializeNativeGameplayTags() {
 
 	S_GameplayTags.DeBuff_Duration_Name = FName(".Duration");
 
+	/**GameplayCue*/
+	S_GameplayTags.Cue_Burn = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("GameplayCue.Burn"));
+	S_GameplayTags.Cue_Stun = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("GameplayCue.Stun"));
+	S_GameplayTags.Cue_HaloOfProtection = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("GameplayCue.HaloOfProtection"));
+	S_GameplayTags.Cue_LifeSiphon = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("GameplayCue.LifeSiphon"));
+	S_GameplayTags.Cue_ManaSiphon = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("GameplayCue.ManaSiphon"));
+
 	// Map
 	S_GameplayTags.DamageTypesToDeBuffAndResistance.Add(S_GameplayTags.Damage_Fire, FDeBuffInfo(S_GameplayTags.DeBuff_Burn, S_GameplayTags.Attributes_Resistance_Fire));
 	S_GameplayTags.DamageTypesToDeBuffAndResistance.Add(S_GameplayTags.Damage_Lightning, FDeBuffInfo(S_GameplayTags.DeBuff_Stun, S_GameplayTags.Attributes_Resistance_Lightning));
 	S_GameplayTags.DamageTypesToDeBuffAndResistance.Add(S_GameplayTags.Damage_Arcane, FDeBuffInfo(S_GameplayTags.DeBuff_Arcane, S_GameplayTags.Attributes_Resistance_Arcane));
 	S_GameplayTags.DamageTypesToDeBuffAndResistance.Add(S_GameplayTags.Damage_Physical, FDeBuffInfo(S_GameplayTags.DeBuff_Physical, S_GameplayTags.Attributes_Resistance_Physical));
+
+	S_GameplayTags.PassiveAbilityToCue.Add(S_GameplayTags.Ability_Passive_HaloOfProtection, S_GameplayTags.Cue_HaloOfProtection);
+	S_GameplayTags.PassiveAbilityToCue.Add(S_GameplayTags.Ability_Passive_LifeSiphon, S_GameplayTags.Cue_LifeSiphon);
+	S_GameplayTags.PassiveAbilityToCue.Add(S_GameplayTags.Ability_Passive_ManaSiphon, S_GameplayTags.Cue_ManaSiphon);
 
 	S_GameplayTags.S_OnGameplayTagsInitialized.Broadcast();
 }

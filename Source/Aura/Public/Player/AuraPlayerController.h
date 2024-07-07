@@ -7,6 +7,8 @@
 #include "GameFramework/PlayerController.h"
 #include "AuraPlayerController.generated.h"
 
+class UNiagaraSystem;
+
 class USplineComponent;
 
 class UAuraAbilitySystemComponent;
@@ -85,6 +87,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float AutoRunAcceptanceRadius = 30.f;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UNiagaraSystem> ClickNiagaraSystem;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USplineComponent> Spline;

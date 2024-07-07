@@ -4,7 +4,9 @@
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AuraGameplayTags.h"
 #include "GameplayCueManager.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "Interaction/PlayerInterface.h"
 #include "UI/WidgetController/OverlayWidgetController.h"
 
@@ -24,7 +26,28 @@ void UAuraAbilitySystemComponent::AbilityActorInfoSet() {
 	OnGameplayEffectAppliedDelegateToSelf.AddUObject(this, &UAuraAbilitySystemComponent::ClientEffectApplied);
 }
 
+void UAuraAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& InputTag) {
+	if (!InputTag.IsValid()) {
+		return;
+	}
+
+	FScopedAbilityListLock AbilityListLock(*this);
+	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities()) {
+		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag)) {
+			AbilitySpecInputPressed(AbilitySpec);
+			if (!AbilitySpec.IsActive()) {
+				InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, AbilitySpec.Handle, AbilitySpec.ActivationInfo.GetActivationPredictionKey());
+			}
+		}
+	}
+}
+
 void UAuraAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InputTag) {
+	if (!InputTag.IsValid()) {
+		return;
+	}
+
+	FScopedAbilityListLock AbilityListLock(*this);
 	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities()) {
 		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag)) {
 			AbilitySpecInputPressed(AbilitySpec);
@@ -36,9 +59,11 @@ void UAuraAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InputT
 }
 
 void UAuraAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& InputTag) {
+	FScopedAbilityListLock AbilityListLock(*this);
 	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities()) {
-		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag)) {
+		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag) && AbilitySpec.IsActive()) {
 			AbilitySpecInputReleased(AbilitySpec);
+			InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, AbilitySpec.Handle, AbilitySpec.ActivationInfo.GetActivationPredictionKey());
 		}
 	}
 }
@@ -65,6 +90,12 @@ void UAuraAbilitySystemComponent::UpgradeAttribute(const FGameplayTag& Attribute
 			ServerUpgradeAttribute(AttributeTag);
 		}
 	}
+}
+
+bool UAuraAbilitySystemComponent::IsPassiveAbility(const FGameplayAbilitySpec& Spec) const {
+	const UAuraDataAssetAbilityInfo* AbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(GetAvatarActor());
+	const FGameplayTag& AbilityTag = UAuraAbilitySystemLibrary::GetAbilityTagFromAbility(Spec.Ability);
+	return AbilityInfo->FindAbilityInfoForTag(AbilityTag).TypeTag.MatchesTagExact(FAuraGameplayTags::Get().Ability_Type_Passive);
 }
 
 void UAuraAbilitySystemComponent::ServerUpgradeAttribute_Implementation(const FGameplayTag& AttributeTag) {

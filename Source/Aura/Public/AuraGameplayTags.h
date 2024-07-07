@@ -160,6 +160,12 @@ struct FAuraGameplayTags {
 
 	FGameplayTag Ability_Type_Passive;
 
+	FGameplayTag Ability_Passive_HaloOfProtection;
+
+	FGameplayTag Ability_Passive_LifeSiphon;
+
+	FGameplayTag Ability_Passive_ManaSiphon;
+
 	/**/
 
 	/** Cooldown */
@@ -171,7 +177,21 @@ struct FAuraGameplayTags {
 	FGameplayTag Attributes_Meta_IncomingXP;
 
 	/**/
+	/** GameplayCue*/
+	FGameplayTag Cue_Burn;
+
+	FGameplayTag Cue_Stun;
+
+	FGameplayTag Cue_HaloOfProtection;
+
+	FGameplayTag Cue_LifeSiphon;
+
+	FGameplayTag Cue_ManaSiphon;
+
+	/**/
 	TMap<FGameplayTag, FDeBuffInfo> DamageTypesToDeBuffAndResistance;
+
+	TMap<FGameplayTag, FGameplayTag> PassiveAbilityToCue;
 
 	static FOnGameplayTagsInitialized S_OnGameplayTagsInitialized;
 

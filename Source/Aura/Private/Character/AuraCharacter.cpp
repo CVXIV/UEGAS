@@ -4,10 +4,12 @@
 #include "Character/AuraCharacter.h"
 
 #include "AbilitySystemComponent.h"
+#include "AuraGameplayTags.h"
 #include "NiagaraComponent.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraPlayerAbilitySystemComponent.h"
 #include "AbilitySystem/Data/AuraDataAssetLevelUpInfo.h"
+#include "AbilitySystem/DeBuff/DeBuffNiagaraComponent.h"
 #include "Aura/Aura.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -145,6 +147,9 @@ void AAuraCharacter::InitAbilityActorInfo() {
 	AuraPlayerAbilitySystemComponent = Cast<UAuraPlayerAbilitySystemComponent>(AuraPlayerState->GetAbilitySystemComponent());
 	check(AuraPlayerAbilitySystemComponent)
 
+	AuraPlayerAbilitySystemComponent->RegisterGameplayTagEvent(FAuraGameplayTags::Get().DeBuff_Stun, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AAuraCharacter::StunTagChanged);
+	AuraPlayerAbilitySystemComponent->RegisterGameplayTagEvent(FAuraGameplayTags::Get().DeBuff_Burn, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AAuraCharacter::BurnTagChanged);
+
 	AuraAbilitySystemComponent->InitAbilityActorInfo(AuraPlayerState, this);
 	AuraAbilitySystemComponent->AbilityActorInfoSet();
 	AttributeSet = AuraPlayerState->GetAttributeSet();
@@ -156,4 +161,6 @@ void AAuraCharacter::InitAbilityActorInfo() {
 		}
 	}
 	InitializeDefaultAttributes();
+
+	PostAbilitySystemInit();
 }

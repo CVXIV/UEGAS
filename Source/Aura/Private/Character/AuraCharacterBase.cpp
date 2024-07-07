@@ -3,10 +3,12 @@
 #include "Character/AuraCharacterBase.h"
 
 #include "AuraGameplayTags.h"
+#include "GameplayCueFunctionLibrary.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
-#include "AbilitySystem/DeBuff/DeBuffNiagaraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 AAuraCharacterBase::AAuraCharacterBase() {
 	PrimaryActorTick.bCanEverTick = false;
@@ -16,16 +18,21 @@ AAuraCharacterBase::AAuraCharacterBase() {
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon");
 	Weapon->SetupAttachment(GetMesh(), FName("WeaponHandSocket"));
 	Weapon->SetGenerateOverlapEvents(false);
+}
 
-	BurnDeBuffNiagaraComponent = CreateDefaultSubobject<UDeBuffNiagaraComponent>("BurnDeBuffNiagaraComponent");
-	BurnDeBuffNiagaraComponent->DeBuffTag = FAuraGameplayTags::Get().DeBuff_Burn;
+void AAuraCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AAuraCharacterBase, bInShockLoop)
+	DOREPLIFETIME(AAuraCharacterBase, bStunned)
+	DOREPLIFETIME(AAuraCharacterBase, bBurned)
 }
 
 void AAuraCharacterBase::BeginPlay() {
 	Super::BeginPlay();
 
 	// 不能放在构造函数，否则会绑定失败
-	BurnDeBuffNiagaraComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "Root");
+	//BurnDeBuffNiagaraComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "Root");
 	bDead = false;
 }
 
@@ -84,8 +91,20 @@ UNiagaraSystem* AAuraCharacterBase::GetBloodEffect_Implementation() const {
 	return BloodEffect;
 }
 
-FASCRegisterSignature AAuraCharacterBase::GetOnAscRegisteredDelegate() const {
+FASCRegisterSignature& AAuraCharacterBase::GetOnAscRegisteredDelegate() {
 	return OnAscRegistered;
+}
+
+FDiedSignature& AAuraCharacterBase::GetOnDiedDelegate() {
+	return OnDied;
+}
+
+void AAuraCharacterBase::SetInShockLoop_Implementation(bool InbInShockLoop) {
+	this->bInShockLoop = InbInShockLoop;
+}
+
+USkeletalMeshComponent* AAuraCharacterBase::GetWeapon() const {
+	return Weapon;
 }
 
 void AAuraCharacterBase::Die_Implementation(const FVector& DeathImpulse) {
@@ -96,6 +115,7 @@ void AAuraCharacterBase::Die_Implementation(const FVector& DeathImpulse) {
 
 void AAuraCharacterBase::OnDie() {
 	bDead = true;
+	OnDied.Broadcast(this);
 
 	UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation());
 
@@ -113,6 +133,61 @@ void AAuraCharacterBase::OnDie() {
 }
 
 void AAuraCharacterBase::InitAbilityActorInfo() {
+}
+
+void AAuraCharacterBase::PostAbilitySystemInit() {
+	AuraAbilitySystemComponent->ActivatePassiveAbility.AddUObject(this, &AAuraCharacterBase::OnPassiveAbilityChange);
+}
+
+void AAuraCharacterBase::StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount) {
+	FGameplayCueParameters CueParameters;
+	CueParameters.SourceObject = this;
+	CueParameters.Location = GetActorLocation();
+	CueParameters.TargetAttachComponent = GetRootComponent();
+	if (NewCount > 0) {
+		bStunned = true;
+		GetCharacterMovement()->MaxWalkSpeed = 0;
+
+		AuraAbilitySystemComponent->AddReplicatedLooseGameplayTag(FAuraGameplayTags::Get().DeBuff_Stun);
+		UGameplayCueFunctionLibrary::AddGameplayCueOnActor(this, FAuraGameplayTags::Get().Cue_Stun, CueParameters);
+	} else {
+		bStunned = false;
+		GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+
+		AuraAbilitySystemComponent->RemoveReplicatedLooseGameplayTag(FAuraGameplayTags::Get().DeBuff_Stun);
+		UGameplayCueFunctionLibrary::RemoveGameplayCueOnActor(this, FAuraGameplayTags::Get().Cue_Stun, CueParameters);
+	}
+}
+
+void AAuraCharacterBase::BurnTagChanged(const FGameplayTag CallbackTag, int32 NewCount) {
+	FGameplayCueParameters CueParameters;
+	CueParameters.SourceObject = this;
+	CueParameters.Location = GetActorLocation();
+	CueParameters.TargetAttachComponent = GetRootComponent();
+	if (NewCount > 0) {
+		bBurned = true;
+		UGameplayCueFunctionLibrary::AddGameplayCueOnActor(this, FAuraGameplayTags::Get().Cue_Burn, CueParameters);
+	} else {
+		bBurned = false;
+		UGameplayCueFunctionLibrary::RemoveGameplayCueOnActor(this, FAuraGameplayTags::Get().Cue_Burn, CueParameters);
+	}
+}
+
+void AAuraCharacterBase::OnPassiveAbilityChange(const FGameplayTag& AbilityTag, bool bActivate) {
+	FGameplayCueParameters CueParameters;
+	CueParameters.SourceObject = this;
+	CueParameters.Location = GetActorLocation();
+	CueParameters.TargetAttachComponent = GetRootComponent();
+	const FGameplayTag* CueTag = FAuraGameplayTags::Get().PassiveAbilityToCue.Find(AbilityTag);
+	if (bActivate) {
+		if (CueTag) {
+			UGameplayCueFunctionLibrary::AddGameplayCueOnActor(this, *CueTag, CueParameters);
+		}
+	} else {
+		if (CueTag) {
+			UGameplayCueFunctionLibrary::RemoveGameplayCueOnActor(this, *CueTag, CueParameters);
+		}
+	}
 }
 
 void AAuraCharacterBase::ApplyEffectToSelf(const TSubclassOf<UGameplayEffect>& GameplayEffect, const float Level) const {

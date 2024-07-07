@@ -11,7 +11,7 @@ FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassD
 	Params.WorldContextObject = GetAvatarActorFromActorInfo();
 	Params.Instigator = Instigator;
 	Params.DamageGameplayEffectClass = DamageEffectClass;
-	Params.SourceAbilitySystemComponent = GetAbilitySystemComponentFromActorInfo();
+	Params.SourceAbilitySystemComponent =  GetAbilitySystemComponentFromActorInfo();
 	Params.TargetAbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target);
 	for (const TTuple<FGameplayTag, FDamageTypeInfo>& Pair : DamageTypes) {
 		Params.DamageTypesKeys.Add(Pair.Key);
@@ -20,6 +20,7 @@ FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassD
 	Params.AbilityLevel = GetAbilityLevel();
 	Params.DeathImpulseMagnitude = DeathImpulseMagnitude * 1000.f;
 	Params.KnockBackForceMagnitude = KnockBackForceMagnitude * 1000.f;
+	Params.bTakeHitReact = bTakeHitReact;
 
 	return Params;
 }

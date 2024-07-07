@@ -56,6 +56,8 @@ protected:
 
 	virtual void InitializeDefaultAttributes() const override;
 
+	virtual void StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount) override;
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void StartDissolve(const TArray<UMaterialInstanceDynamic*>& MaterialInstanceDynamic);
 
@@ -72,9 +74,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TObjectPtr<UAnimMontage> HitReactMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Combat")
-	float BaseWalkSpeed = 250.f;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	bool bHitReacting = false;

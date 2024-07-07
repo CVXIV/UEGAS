@@ -31,8 +31,8 @@ void UAuraPlayerAbilitySystemComponent::AddCharacterPassiveAbilities(const TArra
 }
 
 FGameplayAbilitySpec* UAuraPlayerAbilitySystemComponent::GetSpecFromAbilityTag(const FGameplayTag& AbilityTag) {
-	TArray<FGameplayAbilitySpec>& AbilitySpecs = GetActivatableAbilities();
-	for (FGameplayAbilitySpec& AbilitySpec : AbilitySpecs) {
+	FScopedAbilityListLock AbilityListLock(*this);
+	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities()) {
 		if (AbilitySpec.Ability->AbilityTags.HasTag(AbilityTag)) {
 			return &AbilitySpec;
 		}
@@ -119,7 +119,13 @@ void UAuraPlayerAbilitySystemComponent::ServerEquipAbility_Implementation(const 
 			const FGameplayTag& PreSlot = UAuraAbilitySystemLibrary::GetInputTagFromSpec(*AbilitySpec);
 			if (!PreSlot.MatchesTagExact(AbilitySlot)) {
 				// 清除原先的输入绑定
-				AbilitySpec->DynamicAbilityTags.RemoveTag(PreSlot);
+				// 如果原先没有绑定且是被动技能，则先激活
+				if (!AbilitySpec->DynamicAbilityTags.RemoveTag(PreSlot)) {
+					if (IsPassiveAbility(*AbilitySpec)) {
+						TryActivateAbility(AbilitySpec->Handle);
+						ActivatePassiveAbility.Broadcast(AbilityTag, true);
+					}
+				}
 				// 清除将要绑定的输入（如果有的话）
 				ClearAbilitiesOfSlot(AbilitySlot);
 				AbilitySpec->DynamicAbilityTags.AddTag(AbilitySlot);
@@ -127,6 +133,7 @@ void UAuraPlayerAbilitySystemComponent::ServerEquipAbility_Implementation(const 
 					AbilitySpec->DynamicAbilityTags.RemoveTag(FAuraGameplayTags::Get().Ability_Status_Unlocked);
 					AbilitySpec->DynamicAbilityTags.AddTag(FAuraGameplayTags::Get().Ability_Status_Equipped);
 				}
+
 				MarkAbilitySpecDirty(*AbilitySpec);
 				ClientEquipAbility(AbilityTag, AbilitySlot, PreSlot);
 			}
@@ -166,6 +173,11 @@ void UAuraPlayerAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& Abil
 void UAuraPlayerAbilitySystemComponent::ClearAbilitiesOfSlot(const FGameplayTag& Slot) {
 	FScopedAbilityListLock ActiveScopeLoc(*this);
 	for (FGameplayAbilitySpec& Spec : GetActivatableAbilities()) {
-		Spec.DynamicAbilityTags.RemoveTag(Slot);
+		if (Spec.DynamicAbilityTags.RemoveTag(Slot)) {
+			if (IsPassiveAbility(Spec)) {
+				ActivatePassiveAbility.Broadcast(UAuraAbilitySystemLibrary::GetAbilityTagFromAbility(Spec.Ability), false);
+			}
+			MarkAbilitySpecDirty(Spec);
+		}
 	}
 }

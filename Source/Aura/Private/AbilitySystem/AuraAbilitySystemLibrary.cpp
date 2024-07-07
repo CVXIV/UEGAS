@@ -7,8 +7,8 @@
 #include "AuraAbilityTypes.h"
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
-#include "AbilitySystem/AuraAttributeSet.h"
 #include "Character/AuraCharacter.h"
+#include "Engine/OverlapResult.h"
 #include "Game/AuraGameModeBase.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/GameplayStatics.h"
@@ -141,6 +141,13 @@ bool UAuraAbilitySystemLibrary::IsCriticalHit(const FGameplayEffectContextHandle
 	return false;
 }
 
+bool UAuraAbilitySystemLibrary::IsTakeHitReact(const FGameplayEffectContextHandle& EffectContextHandle) {
+	if (const FAuraGameplayEffectContext* Context = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get())) {
+		return Context->IsTakeHitReact();
+	}
+	return false;
+}
+
 void UAuraAbilitySystemLibrary::SetIsBlockedHit(FGameplayEffectContextHandle& EffectContextHandle, bool bInIsBlockedHit) {
 	if (FAuraGameplayEffectContext* Context = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get())) {
 		Context->SetIsBlockedHit(bInIsBlockedHit);
@@ -150,6 +157,12 @@ void UAuraAbilitySystemLibrary::SetIsBlockedHit(FGameplayEffectContextHandle& Ef
 void UAuraAbilitySystemLibrary::SetIsCriticalHit(FGameplayEffectContextHandle& EffectContextHandle, bool bInIsCriticalHit) {
 	if (FAuraGameplayEffectContext* Context = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get())) {
 		Context->SetIsCriticalHit(bInIsCriticalHit);
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetTakeHitReact(FGameplayEffectContextHandle& EffectContextHandle, bool bInTakeHitReact) {
+	if (FAuraGameplayEffectContext* Context = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get())) {
+		Context->SetTakeHitReact(bInTakeHitReact);
 	}
 }
 
@@ -193,7 +206,7 @@ void UAuraAbilitySystemLibrary::SetDeBuffProperty(FGameplayEffectContextHandle& 
 	}
 }
 
-TArray<AActor*> UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldContext, const TArray<AActor*> ActorsToIgnore, float Radius, const FVector& SphereOrigin) {
+TArray<AActor*> UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldContext, const TArray<AActor*>& ActorsToIgnore, float Radius, const FVector& SphereOrigin) {
 	FCollisionQueryParams SphereParams;
 	SphereParams.AddIgnoredActors(ActorsToIgnore);
 
@@ -254,9 +267,9 @@ FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyGameplayEffect(FDam
 
 	SetKnockBackForce(EffectContextHandle, DamageEffectParams.Instigator->GetActorForwardVector() * DamageEffectParams.KnockBackForceMagnitude);
 	SetDeathImpulse(EffectContextHandle, DamageEffectParams.Instigator->GetActorForwardVector() * DamageEffectParams.DeathImpulseMagnitude);
+	SetTakeHitReact(EffectContextHandle, DamageEffectParams.bTakeHitReact);
 
 	DamageEffectParams.TargetAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data);
-
 
 	return EffectContextHandle;
 }

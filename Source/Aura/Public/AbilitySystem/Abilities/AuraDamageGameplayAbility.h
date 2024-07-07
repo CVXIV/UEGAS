@@ -20,7 +20,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Damage", meta = (DisplayName = "伤害类型"))
+	UPROPERTY(EditDefaultsOnly, Category = "Damage", meta = (DisplayName = "伤害类型", Categories = "Damage"))
 	TMap<FGameplayTag, FDamageTypeInfo> DamageTypes;
 
 	UPROPERTY(EditDefaultsOnly, meta = (ClampMin = 0))
@@ -28,4 +28,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, meta = (ClampMin = 0))
 	float KnockBackForceMagnitude = 0;
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bTakeHitReact = false;
 };

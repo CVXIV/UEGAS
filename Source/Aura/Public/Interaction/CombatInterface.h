@@ -7,9 +7,13 @@
 #include "UObject/Interface.h"
 #include "CombatInterface.generated.h"
 
+class AAuraCharacterBase;
+
 class UAbilitySystemComponent;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FASCRegisterSignature, UAbilitySystemComponent*)
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FDiedSignature, const AAuraCharacterBase*)
 
 enum class ECharacterClass : uint8;
 
@@ -52,7 +56,9 @@ public:
 
 	virtual void Die(const FVector& DeathImpulse) = 0;
 
-	virtual FASCRegisterSignature GetOnAscRegisteredDelegate() const = 0;
+	virtual FASCRegisterSignature& GetOnAscRegisteredDelegate() = 0;
+
+	virtual FDiedSignature& GetOnDiedDelegate() = 0;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	bool IsDead() const;
@@ -71,4 +77,9 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	ECharacterClass GetCharacterClass() const;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SetInShockLoop(bool InbInShockLoop);
+
+	virtual USkeletalMeshComponent* GetWeapon() const = 0;
 };

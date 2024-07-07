@@ -12,6 +12,8 @@ struct FAuraGameplayEffectSpecHandle;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTag, const FGameplayTagContainer&);
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FActivatePassiveAbilitySignature, const FGameplayTag&, bool);
+
 UCLASS()
 class AURA_API UAuraAbilitySystemComponent : public UAbilitySystemComponent {
 	GENERATED_BODY()
@@ -27,6 +29,10 @@ public:
 
 	FEffectAssetTag EffectAssetTags;
 
+	FActivatePassiveAbilitySignature ActivatePassiveAbility;
+
+	void AbilityInputTagPressed(const FGameplayTag& InputTag);
+
 	void AbilityInputTagHeld(const FGameplayTag& InputTag);
 
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);
@@ -41,6 +47,8 @@ protected:
 
 	UFUNCTION(Server, Reliable)
 	void ServerUpgradeAttribute(const FGameplayTag& AttributeTag);
+
+	bool IsPassiveAbility(const FGameplayAbilitySpec& Spec) const;
 
 private:
 	TMap<TSubclassOf<UGameplayEffect>, int32> GameplayEffectDenyCount;

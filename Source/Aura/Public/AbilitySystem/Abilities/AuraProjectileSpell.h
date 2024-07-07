@@ -24,8 +24,23 @@ protected:
 	TSubclassOf<AAuraProjectile> ProjectileClass;
 
 	UFUNCTION(BlueprintCallable, Category = "Projectile")
-	void SpawnProjectile(const FVector& ProjectileTargetLocation, const FGameplayTag& Tag);
+	void SpawnProjectile(const FVector& ProjectileTargetLocation, AActor* ProjectileTarget, const FGameplayTag& Tag);
 
 	UFUNCTION(Server, Reliable)
-	void Server_SpawnProjectile(const FVector& ProjectileTargetLocation, const FGameplayTag& Tag);
+	void Server_SpawnProjectile(const FVector& ProjectileTargetLocation, AActor* ProjectileTarget, const FGameplayTag& Tag);
+
+	UPROPERTY(EditDefaultsOnly, meta = (ClampMin = 0), Category = "Projectile")
+	float ProjectileSpread = 90.f;
+
+	UPROPERTY(EditDefaultsOnly, meta = (ClampMin = 1), Category = "Projectile")
+	int32 MaxNumProjectiles = 5;
+
+	UPROPERTY(EditDefaultsOnly, meta = (ClampMin = 0), Category = "Projectile")
+	float HomingAccelerationMagnitudeMin = 2000.f;
+
+	UPROPERTY(EditDefaultsOnly, meta = (ClampMin = 0), Category = "Projectile")
+	float HomingAccelerationMagnitudeMax = 5000.f;
+
+private:
+	void SpawnProjectile(const FVector& TargetLocation, const FVector& SpawnedLocation, AActor* ProjectileTarget, const FVector& Direction) const;
 };

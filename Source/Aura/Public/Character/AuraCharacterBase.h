@@ -37,6 +37,8 @@ class AURA_API AAuraCharacterBase : public ACharacter, public IAbilitySystemInte
 public:
 	AAuraCharacterBase();
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	/** Combat Interface*/
@@ -57,7 +59,13 @@ public:
 
 	virtual UNiagaraSystem* GetBloodEffect_Implementation() const override;
 
-	virtual FASCRegisterSignature GetOnAscRegisteredDelegate() const override;
+	virtual FASCRegisterSignature& GetOnAscRegisteredDelegate() override;
+
+	virtual FDiedSignature& GetOnDiedDelegate() override;
+
+	virtual void SetInShockLoop_Implementation(bool InbInShockLoop) override;
+
+	virtual USkeletalMeshComponent* GetWeapon() const override;
 
 	/** Combat Interface*/
 
@@ -71,6 +79,14 @@ protected:
 	virtual void OnDie();
 
 	virtual void InitAbilityActorInfo();
+
+	virtual void PostAbilitySystemInit();
+
+	virtual void StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
+
+	virtual void BurnTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
+
+	virtual void OnPassiveAbilityChange(const FGameplayTag& AbilityTag, bool bActivate);
 
 	void ApplyEffectToSelf(const TSubclassOf<UGameplayEffect>& GameplayEffect, float Level) const;
 
@@ -100,6 +116,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TObjectPtr<USoundBase> DeathSound;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	float BaseWalkSpeed = 600.f;
+
 	UPROPERTY()
 	TObjectPtr<UAttributeSet> AttributeSet;
 
@@ -115,8 +134,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TArray<FTaggedMontage> AttackMontage;
 
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UDeBuffNiagaraComponent> BurnDeBuffNiagaraComponent;
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	bool bInShockLoop = false;
+
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	bool bStunned = false;
+
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	bool bBurned = false;
 
 	bool bDead = false;
 
@@ -124,4 +149,6 @@ protected:
 	ECharacterClass CharacterClass = ECharacterClass::Warrior;
 
 	FASCRegisterSignature OnAscRegistered;
+
+	FDiedSignature OnDied;
 };

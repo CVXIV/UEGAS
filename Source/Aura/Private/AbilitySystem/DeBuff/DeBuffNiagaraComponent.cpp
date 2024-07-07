@@ -14,7 +14,7 @@ UDeBuffNiagaraComponent::UDeBuffNiagaraComponent() {
 void UDeBuffNiagaraComponent::BeginPlay() {
 	Super::BeginPlay();
 
-	const ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetOwner());
+	ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetOwner());
 	if (UAbilitySystemComponent* Asc = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner())) {
 		Asc->RegisterGameplayTagEvent(DeBuffTag, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &UDeBuffNiagaraComponent::DeBuffTagChanged);
 	} else if (CombatInterface) {

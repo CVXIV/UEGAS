@@ -2,6 +2,7 @@
 
 #include "GameplayEffectTypes.h"
 #include "ScalableFloat.h"
+#include "AbilitySystemComponent.h"
 #include "AuraAbilityTypes.generated.h"
 
 class UGameplayEffect;
@@ -96,6 +97,9 @@ struct FDamageEffectParams {
 
 	UPROPERTY()
 	float KnockBackForceMagnitude = 0;
+
+	UPROPERTY()
+	bool bTakeHitReact = false;
 };
 
 USTRUCT(BlueprintType)
@@ -122,6 +126,14 @@ struct FAuraGameplayEffectContext : public FGameplayEffectContext {
 
 	void SetIsCriticalHit(const bool bInIsCriticalHit) {
 		this->bIsCriticalHit = bInIsCriticalHit;
+	}
+
+	[[nodiscard]] bool IsTakeHitReact() const {
+		return bTakeHitReact;
+	}
+
+	void SetTakeHitReact(const bool bInTakeHitReact) {
+		this->bTakeHitReact = bInTakeHitReact;
 	}
 
 	void AddDeBuffInfo(bool bIsSuccessfulDeBuff, const FGameplayTag& InDeBuff, float DeBuffDamage, float DeBuffFrequency, float DeBuffDuration) {
@@ -165,6 +177,9 @@ protected:
 
 	UPROPERTY()
 	bool bIsCriticalHit = false;
+
+	UPROPERTY()
+	bool bTakeHitReact = false;
 
 	UPROPERTY()
 	TArray<FDeBuffProperty> DeBuffProperties;

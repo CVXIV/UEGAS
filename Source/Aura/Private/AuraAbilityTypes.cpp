@@ -30,18 +30,21 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 		if (bIsCriticalHit) {
 			RepBits |= 1 << 8;
 		}
-		if (DeBuffProperties.Num() > 0) {
+		if (bTakeHitReact) {
 			RepBits |= 1 << 9;
 		}
-		if (!DeathImpulse.IsZero()) {
+		if (DeBuffProperties.Num() > 0) {
 			RepBits |= 1 << 10;
 		}
-		if (!KnockBackForce.IsZero()) {
+		if (!DeathImpulse.IsZero()) {
 			RepBits |= 1 << 11;
+		}
+		if (!KnockBackForce.IsZero()) {
+			RepBits |= 1 << 12;
 		}
 	}
 
-	Ar.SerializeBits(&RepBits, 12);
+	Ar.SerializeBits(&RepBits, 13);
 
 	if (RepBits & (1 << 0)) {
 		Ar << Instigator;
@@ -79,12 +82,15 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 		Ar << bIsCriticalHit;
 	}
 	if (RepBits & (1 << 9)) {
-		SafeNetSerializeTArray_Default<31>(Ar, DeBuffProperties);
+		Ar << bTakeHitReact;
 	}
 	if (RepBits & (1 << 10)) {
-		DeathImpulse.NetSerialize(Ar, Map, bOutSuccess);
+		SafeNetSerializeTArray_Default<31>(Ar, DeBuffProperties);
 	}
 	if (RepBits & (1 << 11)) {
+		DeathImpulse.NetSerialize(Ar, Map, bOutSuccess);
+	}
+	if (RepBits & (1 << 12)) {
 		KnockBackForce.NetSerialize(Ar, Map, bOutSuccess);
 	}
 
