@@ -8,6 +8,7 @@
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
+#include "Kismet/GameplayStatics.h"
 
 struct FAuraDamageStatics {
 	friend class UExecCalc_Damage;
@@ -104,8 +105,8 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	EvaluateParameters.SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
 	EvaluateParameters.TargetTags = Spec.CapturedTargetTags.GetAggregatedTags();
 
-	FAuraGameplayEffectContext* EffectContext = static_cast<FAuraGameplayEffectContext*>(Spec.GetContext().Get());
-
+	FGameplayEffectContextHandle EffectSpecHandle = Spec.GetContext();
+	FAuraGameplayEffectContext* EffectContext = static_cast<FAuraGameplayEffectContext*>(EffectSpecHandle.Get());
 	// 获取基础伤害和DeBuff
 	float Damage = 0.f;
 	for (const TTuple<FGameplayTag, float>& Pair : Spec.SetByCallerTagMagnitudes) {
@@ -143,6 +144,14 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	const bool bIsCriticalHit = UAuraAbilitySystemLibrary::ProbabilityCheck(FinalCriticalHitChance);
 	Damage = bIsCriticalHit ? 2 * Damage + CriticalHitDamage : Damage;
 	EffectContext->SetIsCriticalHit(bIsCriticalHit);
+
+	// 接下来如果是径向伤害，先计算衰减后的值
+	if (UAuraAbilitySystemLibrary::IsRadialDamage(EffectSpecHandle)) {
+		const FVector RadialDamageOrigin = UAuraAbilitySystemLibrary::GetRadialDamageOrigin(EffectSpecHandle);
+		const float DamageInnerRadius = UAuraAbilitySystemLibrary::GetRadialDamageInnerRadius(EffectSpecHandle);
+		const float DamageOuterRadius = UAuraAbilitySystemLibrary::GetRadialDamageOuterRadius(EffectSpecHandle);
+		Damage = UAuraAbilitySystemLibrary::CalcRadialDamageWithFalloff(Damage, FVector::Distance(TargetAvatar->GetActorLocation(), RadialDamageOrigin), DamageInnerRadius, DamageOuterRadius, 0.5f);
+	}
 
 	float TargetArmor;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().ArmorDef, EvaluateParameters, TargetArmor);

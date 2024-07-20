@@ -22,10 +22,10 @@ USTRUCT(BlueprintType)
 struct FAuraDataAssetAbilityInfoRow {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, meta = (Categories = "Ability"))
 	FGameplayTag AbilityTag = FGameplayTag();
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, meta = (Categories = "Ability.Type"))
 	FGameplayTag TypeTag = FGameplayTag();
 
 	UPROPERTY(BlueprintReadOnly)
@@ -34,7 +34,7 @@ struct FAuraDataAssetAbilityInfoRow {
 	UPROPERTY(BlueprintReadOnly)
 	EAbilityStatus AbilityStatus = EAbilityStatus::None;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, meta = (Categories = "Cooldown"))
 	FGameplayTag CooldownTag = FGameplayTag();
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)

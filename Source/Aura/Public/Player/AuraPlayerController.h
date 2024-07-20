@@ -7,6 +7,8 @@
 #include "GameFramework/PlayerController.h"
 #include "AuraPlayerController.generated.h"
 
+class AMagicCircle;
+
 class UNiagaraSystem;
 
 class USplineComponent;
@@ -33,6 +35,12 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientShowWidget(AActor* Target, float Damage, bool bIsCriticalHit, bool bIsBlockedHit);
 
+	UFUNCTION(BlueprintCallable)
+	void ShowMagicCircle(UMaterialInterface* DecalMaterial = nullptr);
+
+	UFUNCTION(BlueprintCallable)
+	void HideMagicCircle();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -40,6 +48,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> FloatTextWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AMagicCircle> MagicCircleClass;
+
+	UPROPERTY()
+	TObjectPtr<AMagicCircle> MagicCircle;
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -54,6 +68,8 @@ private:
 	void CursorTrace();
 
 	void AutoRunToDestination();
+
+	void UpdateMagicCircleLocation() const;
 
 	IEnemyInterface* LastActor;
 
@@ -93,4 +109,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USplineComponent> Spline;
+
+	FGameplayTagContainer FilterCursorTags;
 };

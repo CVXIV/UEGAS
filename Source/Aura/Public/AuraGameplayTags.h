@@ -146,6 +146,8 @@ struct FAuraGameplayTags {
 
 	FGameplayTag Ability_Lightning_Electrocute;
 
+	FGameplayTag Ability_Arcane_ArcaneShards;
+
 	FGameplayTag Ability_Status_Locked;
 
 	FGameplayTag Ability_Status_Eligible;
@@ -171,6 +173,8 @@ struct FAuraGameplayTags {
 	/** Cooldown */
 	FGameplayTag Cooldown_FireBolt;
 
+	FGameplayTag Cooldown_ArcaneShards;
+
 	/**/
 
 	/** Meta*/
@@ -187,6 +191,8 @@ struct FAuraGameplayTags {
 	FGameplayTag Cue_LifeSiphon;
 
 	FGameplayTag Cue_ManaSiphon;
+
+	FGameplayTag Cue_ArcaneShards;
 
 	/**/
 	TMap<FGameplayTag, FDeBuffInfo> DamageTypesToDeBuffAndResistance;

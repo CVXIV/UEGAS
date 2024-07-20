@@ -9,6 +9,7 @@
 #include "NavigationSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "Actor/MagicCircle.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/SplineComponent.h"
@@ -35,10 +36,29 @@ void AAuraPlayerController::PlayerTick(float DeltaTime) {
 	CursorTrace();
 
 	AutoRunToDestination();
+
+	UpdateMagicCircleLocation();
+}
+
+void AAuraPlayerController::ShowMagicCircle(UMaterialInterface* DecalMaterial) {
+	if (!IsValid(MagicCircle)) {
+		MagicCircle = GetWorld()->SpawnActor<AMagicCircle>(MagicCircleClass);
+		if (DecalMaterial) {
+			MagicCircle->SetDecalMaterial(DecalMaterial);
+		}
+		this->bShowMouseCursor = false;
+	}
+}
+
+void AAuraPlayerController::HideMagicCircle() {
+	if (IsValid(MagicCircle)) {
+		MagicCircle->Destroy();
+		this->bShowMouseCursor = true;
+	}
 }
 
 void AAuraPlayerController::CursorTrace() {
-	if (GetAuraAbilitySystemComponent() && (GetAuraAbilitySystemComponent()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Action_Attack) || GetAuraAbilitySystemComponent()->HasMatchingGameplayTag(FAuraGameplayTags::Get().DeBuff_Stun))) {
+	if (GetAuraAbilitySystemComponent() && (GetAuraAbilitySystemComponent()->HasAnyMatchingGameplayTags(FilterCursorTags) || GetAuraAbilitySystemComponent()->HasMatchingGameplayTag(FAuraGameplayTags::Get().DeBuff_Stun))) {
 		if (LastActor) {
 			LastActor->UnHighlightActor();
 		}
@@ -49,7 +69,7 @@ void AAuraPlayerController::CursorTrace() {
 		ThisActor = nullptr;
 		return;
 	}
-	GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
+	GetHitResultUnderCursor(IsValid(MagicCircle) ? ECC_Camera : ECC_Visibility, false, HitResult);
 	if (HitResult.bBlockingHit) {
 		LastActor = ThisActor;
 		ThisActor = Cast<IEnemyInterface>(HitResult.GetActor());
@@ -82,6 +102,12 @@ void AAuraPlayerController::AutoRunToDestination() {
 			}
 			ControlledPawn->AddMovementInput(Direction * GetWorld()->GetDeltaSeconds() * 100.f);
 		}
+	}
+}
+
+void AAuraPlayerController::UpdateMagicCircleLocation() const {
+	if (IsValid(MagicCircle)) {
+		MagicCircle->SetActorLocation(HitResult.ImpactPoint);
 	}
 }
 
@@ -183,6 +209,9 @@ void AAuraPlayerController::BeginPlay() {
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer())) {
 		Subsystem->AddMappingContext(AuraContext, 0);
 	}
+
+	FilterCursorTags.AddTag(FAuraGameplayTags::Get().Action_Attack);
+	FilterCursorTags.AddTag(FAuraGameplayTags::Get().Action_HitReact);
 
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;

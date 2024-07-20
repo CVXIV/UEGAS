@@ -192,6 +192,58 @@ const FVector& UAuraAbilitySystemLibrary::GetKnockBackForce(const FGameplayEffec
 	return FVector::ZeroVector;
 }
 
+bool UAuraAbilitySystemLibrary::IsRadialDamage(const FGameplayEffectContextHandle& EffectContextHandle) {
+	if (const FAuraGameplayEffectContext* Context = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get())) {
+		return Context->IsRadialDamage();
+	}
+	return false;
+}
+
+void UAuraAbilitySystemLibrary::SetIsRadialDamage(FGameplayEffectContextHandle& EffectContextHandle, bool bInIsRadialDamage) {
+	if (FAuraGameplayEffectContext* Context = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get())) {
+		Context->SetIsRadialDamage(bInIsRadialDamage);
+	}
+}
+
+float UAuraAbilitySystemLibrary::GetRadialDamageInnerRadius(const FGameplayEffectContextHandle& EffectContextHandle) {
+	if (const FAuraGameplayEffectContext* Context = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get())) {
+		return Context->GetRadialDamageInnerRadius();
+	}
+	return 0;
+}
+
+void UAuraAbilitySystemLibrary::SetRadialDamageInnerRadius(FGameplayEffectContextHandle& EffectContextHandle, float InRadialDamageInnerRadius) {
+	if (FAuraGameplayEffectContext* Context = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get())) {
+		return Context->SetRadialDamageInnerRadius(InRadialDamageInnerRadius);
+	}
+}
+
+float UAuraAbilitySystemLibrary::GetRadialDamageOuterRadius(const FGameplayEffectContextHandle& EffectContextHandle) {
+	if (const FAuraGameplayEffectContext* Context = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get())) {
+		return Context->GetRadiusDamageOuterRadius();
+	}
+	return 0;
+}
+
+void UAuraAbilitySystemLibrary::SetRadialDamageOuterRadius(FGameplayEffectContextHandle& EffectContextHandle, float InRadialDamageOuterRadius) {
+	if (FAuraGameplayEffectContext* Context = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get())) {
+		return Context->SetRadiusDamageOuterRadius(InRadialDamageOuterRadius);
+	}
+}
+
+const FVector& UAuraAbilitySystemLibrary::GetRadialDamageOrigin(const FGameplayEffectContextHandle& EffectContextHandle) {
+	if (const FAuraGameplayEffectContext* Context = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get())) {
+		return Context->GetRadialDamageOrigin();
+	}
+	return FVector::ZeroVector;
+}
+
+void UAuraAbilitySystemLibrary::SetRadialDamageOrigin(FGameplayEffectContextHandle& EffectContextHandle, const FVector& InRadialDamageOrigin) {
+	if (FAuraGameplayEffectContext* Context = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get())) {
+		Context->SetRadialDamageOrigin(InRadialDamageOrigin);
+	}
+}
+
 const TArray<FDeBuffProperty>& UAuraAbilitySystemLibrary::GetDeBuffProperty(const FGameplayEffectContextHandle& EffectContextHandle) {
 	static TArray<FDeBuffProperty> Empty;
 	if (const FAuraGameplayEffectContext* Context = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get())) {
@@ -206,6 +258,28 @@ void UAuraAbilitySystemLibrary::SetDeBuffProperty(FGameplayEffectContextHandle& 
 	}
 }
 
+float UAuraAbilitySystemLibrary::CalcRadialDamageWithFalloff(float BaseDamage, float DistanceFromEpicenter, float DamageInnerRadius, float DamageOuterRadius, float DamageFalloff) {
+	float const ValidatedInnerRadius = FMath::Max(0.f, DamageInnerRadius);
+	float const ValidatedOuterRadius = FMath::Max(DamageOuterRadius, ValidatedInnerRadius);
+	float const ValidatedDist = FMath::Max(0.f, DistanceFromEpicenter);
+
+	if (ValidatedDist >= ValidatedOuterRadius) {
+		// outside the radius, no effect
+		return 0.f;
+	}
+
+	if ((DamageFalloff == 0.f) || (ValidatedDist <= ValidatedInnerRadius)) {
+		// no falloff or inside inner radius means full effect
+		return BaseDamage;
+	}
+
+	// calculate the interpolated scale
+	float DamageScale = 1.f - ((ValidatedDist - ValidatedInnerRadius) / (ValidatedOuterRadius - ValidatedInnerRadius));
+	DamageScale = FMath::Pow(DamageScale, DamageFalloff);
+
+	return BaseDamage * DamageScale;
+}
+
 TArray<AActor*> UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldContext, const TArray<AActor*>& ActorsToIgnore, float Radius, const FVector& SphereOrigin) {
 	FCollisionQueryParams SphereParams;
 	SphereParams.AddIgnoredActors(ActorsToIgnore);
@@ -217,7 +291,7 @@ TArray<AActor*> UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObj
 		World->OverlapMultiByObjectType(Overlaps, SphereOrigin, FQuat::Identity, FCollisionObjectQueryParams(FCollisionObjectQueryParams::InitType::AllDynamicObjects), FCollisionShape::MakeSphere(Radius), SphereParams);
 
 		for (FOverlapResult& Overlap : Overlaps) {
-			if (Overlap.GetActor()->Implements<UCombatInterface>() && !ICombatInterface::Execute_IsDead(Overlap.GetActor())) {
+			if (Overlap.GetActor()->Implements<UCombatInterface>() && !ICombatInterface::Execute_IsDead(Overlap.GetActor()) && FVector::Distance(SphereOrigin, Overlap.GetActor()->GetActorLocation()) <= Radius) {
 				OverlappingActors.Add(Overlap.GetActor());
 			}
 		}
@@ -265,9 +339,15 @@ FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyGameplayEffect(FDam
 		UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(EffectSpecHandle, DeBuff_Duration, DamageTypeInfo.DeBuffDuration);
 	}
 
+	// TODO 待优化
 	SetKnockBackForce(EffectContextHandle, DamageEffectParams.Instigator->GetActorForwardVector() * DamageEffectParams.KnockBackForceMagnitude);
 	SetDeathImpulse(EffectContextHandle, DamageEffectParams.Instigator->GetActorForwardVector() * DamageEffectParams.DeathImpulseMagnitude);
+	
 	SetTakeHitReact(EffectContextHandle, DamageEffectParams.bTakeHitReact);
+	SetIsRadialDamage(EffectContextHandle, DamageEffectParams.bIsRadialDamage);
+	SetRadialDamageInnerRadius(EffectContextHandle, DamageEffectParams.RadialDamageInnerRadius);
+	SetRadialDamageOuterRadius(EffectContextHandle, DamageEffectParams.RadiusDamageOuterRadius);
+	SetRadialDamageOrigin(EffectContextHandle, DamageEffectParams.RadialDamageOrigin);
 
 	DamageEffectParams.TargetAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data);
 

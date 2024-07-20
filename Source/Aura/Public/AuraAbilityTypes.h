@@ -100,10 +100,23 @@ struct FDamageEffectParams {
 
 	UPROPERTY()
 	bool bTakeHitReact = false;
+
+	UPROPERTY()
+	bool bIsRadialDamage = false;
+
+	UPROPERTY()
+	float RadialDamageInnerRadius = 0.f;
+
+	UPROPERTY()
+	float RadiusDamageOuterRadius = 0.f;
+
+	UPROPERTY()
+	FVector RadialDamageOrigin = FVector::ZeroVector;
 };
 
 USTRUCT(BlueprintType)
 struct FAuraGameplayEffectContext : public FGameplayEffectContext {
+
 	GENERATED_BODY()
 
 	virtual UScriptStruct* GetScriptStruct() const override {
@@ -159,6 +172,37 @@ struct FAuraGameplayEffectContext : public FGameplayEffectContext {
 	void SetKnockBackForce(const FVector& InKnockBackForce) {
 		this->KnockBackForce = InKnockBackForce;
 	}
+	[[nodiscard]] bool IsRadialDamage() const {
+		return bIsRadialDamage;
+	}
+
+	void SetIsRadialDamage(const bool bInIsRadialDamage) {
+		this->bIsRadialDamage = bInIsRadialDamage;
+	}
+
+	[[nodiscard]] float GetRadialDamageInnerRadius() const {
+		return RadialDamageInnerRadius;
+	}
+
+	void SetRadialDamageInnerRadius(const float InRadialDamageInnerRadius) {
+		this->RadialDamageInnerRadius = InRadialDamageInnerRadius;
+	}
+
+	[[nodiscard]] float GetRadiusDamageOuterRadius() const {
+		return RadiusDamageOuterRadius;
+	}
+
+	void SetRadiusDamageOuterRadius(const float InRadiusDamageOuterRadius) {
+		this->RadiusDamageOuterRadius = InRadiusDamageOuterRadius;
+	}
+
+	[[nodiscard]] const FVector& GetRadialDamageOrigin() const {
+		return RadialDamageOrigin;
+	}
+
+	void SetRadialDamageOrigin(const FVector& InRadialDamageOrigin) {
+		this->RadialDamageOrigin = InRadialDamageOrigin;
+	}
 
 	/** Creates a copy of this context, used to duplicate for later modifications */
 	virtual FGameplayEffectContext* Duplicate() const override {
@@ -189,6 +233,18 @@ protected:
 
 	UPROPERTY()
 	FVector KnockBackForce = FVector::ZeroVector;
+
+	UPROPERTY()
+	bool bIsRadialDamage = false;
+
+	UPROPERTY()
+	float RadialDamageInnerRadius = 0.f;
+
+	UPROPERTY()
+	float RadiusDamageOuterRadius = 0.f;
+
+	UPROPERTY()
+	FVector RadialDamageOrigin = FVector::ZeroVector;
 };
 
 template <>

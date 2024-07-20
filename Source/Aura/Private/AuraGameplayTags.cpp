@@ -80,6 +80,7 @@ void FAuraGameplayTags::InitializeNativeGameplayTags() {
 	S_GameplayTags.Ability_Summon = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Summon"));
 	S_GameplayTags.Ability_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.FireBolt"));
 	S_GameplayTags.Ability_Lightning_Electrocute = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Lightning.Electrocute"));
+	S_GameplayTags.Ability_Arcane_ArcaneShards = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Arcane.ArcaneShards"));
 	S_GameplayTags.Ability_Status_Locked = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Status.Locked"));
 	S_GameplayTags.Ability_Status_Eligible = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Status.Eligible"));
 	S_GameplayTags.Ability_Status_Unlocked = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Status.Unlocked"));
@@ -93,6 +94,7 @@ void FAuraGameplayTags::InitializeNativeGameplayTags() {
 
 
 	S_GameplayTags.Cooldown_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.FireBolt"));
+	S_GameplayTags.Cooldown_ArcaneShards = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.ArcaneShards"));
 
 	S_GameplayTags.Attributes_Meta_IncomingXP = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Meta.IncomingXP"));
 
@@ -119,6 +121,7 @@ void FAuraGameplayTags::InitializeNativeGameplayTags() {
 	S_GameplayTags.Cue_HaloOfProtection = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("GameplayCue.HaloOfProtection"));
 	S_GameplayTags.Cue_LifeSiphon = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("GameplayCue.LifeSiphon"));
 	S_GameplayTags.Cue_ManaSiphon = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("GameplayCue.ManaSiphon"));
+	S_GameplayTags.Cue_ArcaneShards = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("GameplayCue.ArcaneShards"));
 
 	// Map
 	S_GameplayTags.DamageTypesToDeBuffAndResistance.Add(S_GameplayTags.Damage_Fire, FDeBuffInfo(S_GameplayTags.DeBuff_Burn, S_GameplayTags.Attributes_Resistance_Fire));

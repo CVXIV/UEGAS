@@ -49,6 +49,10 @@ public:
 
 	virtual uint32 GetSpellPoints() const override;
 
+	virtual void ShowMagicCircle_Implementation(UMaterialInterface* DecalMaterial) override;
+
+	virtual void HideMagicCircle_Implementation() override;
+
 	/* IPlayerInterface*/
 
 	const UAuraDataAssetAbilityInfo* GetAbilityInfo() const;

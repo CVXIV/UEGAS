@@ -124,8 +124,10 @@ void UAuraBeamSpell::OnAbilityEnd_Implementation() {
 
 void UAuraBeamSpell::SpawnElectricBeam(AActor* TargetActor, USceneComponent* AttachComponent, const FVector& TargetLocation) {
 	FGameplayCueParameters CueParameters;
-	// 用作更新位置
-	CueParameters.Instigator = TargetActor;
+	// 用作更新位置（对于动态对象）
+	if (TargetActor->Implements<UCombatInterface>()) {
+		CueParameters.Instigator = TargetActor;
+	}
 	CueParameters.SourceObject = TargetActor;
 	CueParameters.Location = TargetLocation;
 	CueParameters.TargetAttachComponent = AttachComponent;
