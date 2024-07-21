@@ -37,7 +37,7 @@ protected:
 	virtual void Destroyed() override;
 
 	UFUNCTION()
-	void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USphereComponent> SphereComponent;
@@ -54,8 +54,11 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> LoopSoundComponent;
 
-private:
 	void OnOverlap() const;
+
+private:
+	UFUNCTION(BlueprintCallable)
+	void OnDestroy(bool bNaturalDied);
 
 	uint8 bIsOverlap : 1;
 

@@ -59,3 +59,11 @@ void UWaitCooldownChange::OnActiveEffectAdded(UAbilitySystemComponent* AbilitySy
 		CooldownStart.Broadcast(GameplayEffectSpec.GetDuration());
 	}
 }
+
+void UWaitCooldownChange::Activate() {
+	TArray<FActiveGameplayEffectHandle> ActiveGameplayEffectHandles = ASC->GetActiveEffects(FGameplayEffectQuery::MakeQuery_MatchAllOwningTags(FGameplayTagContainer(CooldownTag)));
+	if (ActiveGameplayEffectHandles.Num() > 0) {
+		this->ActiveGEHandle = ActiveGameplayEffectHandles[0];
+		this->CooldownStart.Broadcast(GetTimeRemaining());
+	}
+}

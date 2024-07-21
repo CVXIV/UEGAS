@@ -51,9 +51,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	bool bIsRadialDamage = false;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Damage", meta = (ClampMin = 0, EditCondition = "bIsRadialDamage"))
+	UPROPERTY(EditDefaultsOnly, Category = "Damage", meta = (ClampMin = 0, EditCondition = "bIsRadialDamage", EditConditionHides))
 	float RadialDamageInnerRadius = 0.f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Damage", meta = (ClampMin = 0, EditCondition = "bIsRadialDamage"))
+	UPROPERTY(EditDefaultsOnly, Category = "Damage", meta = (ClampMin = 0, EditCondition = "bIsRadialDamage", EditConditionHides))
 	float RadiusDamageOuterRadius = 0.f;
 };

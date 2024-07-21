@@ -57,6 +57,8 @@ void UAbilityTask_SpawnArcaneShards::SpawnArcaneShards_Internal(const FVector& L
 	// 注意！这里客户端和服务器生成的随机Location不一样，客户端只是进行预测；但是最终显示的GC是一样的，因为服务器会把权威的GC发送到客户端
 	FGameplayCueParameters CueParameters;
 	CueParameters.Location = Location;
+	// 优化带宽可以使用ExecuteGameplayCue_NonReplicated
+	//UGameplayCueManager::ExecuteGameplayCue_NonReplicated()
 	UGameplayCueFunctionLibrary::ExecuteGameplayCueOnActor(Ability->GetAvatarActorFromActorInfo(), FAuraGameplayTags::Get().Cue_ArcaneShards, CueParameters);
 	// 计算伤害
 	TArray<AActor*> ActorsToIgnore;

@@ -79,6 +79,7 @@ void FAuraGameplayTags::InitializeNativeGameplayTags() {
 	S_GameplayTags.Ability_Attack = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Attack"));
 	S_GameplayTags.Ability_Summon = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Summon"));
 	S_GameplayTags.Ability_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.FireBolt"));
+	S_GameplayTags.Ability_FireBlast = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.FireBlast"));
 	S_GameplayTags.Ability_Lightning_Electrocute = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Lightning.Electrocute"));
 	S_GameplayTags.Ability_Arcane_ArcaneShards = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Arcane.ArcaneShards"));
 	S_GameplayTags.Ability_Status_Locked = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Status.Locked"));
@@ -94,6 +95,7 @@ void FAuraGameplayTags::InitializeNativeGameplayTags() {
 
 
 	S_GameplayTags.Cooldown_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.FireBolt"));
+	S_GameplayTags.Cooldown_FireBlast = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.FireBlast"));
 	S_GameplayTags.Cooldown_ArcaneShards = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.ArcaneShards"));
 
 	S_GameplayTags.Attributes_Meta_IncomingXP = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Meta.IncomingXP"));

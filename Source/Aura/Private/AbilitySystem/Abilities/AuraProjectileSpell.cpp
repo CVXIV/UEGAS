@@ -67,7 +67,7 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& TargetLocation, const 
 		Projectile->ProjectileMovementComponent->HomingTargetComponent = Projectile->HomingTargetSceneComponent;
 	}
 	Projectile->ProjectileMovementComponent->bIsHomingProjectile = true;
-	Projectile->ProjectileMovementComponent->ProjectileGravityScale = 1;
+	Projectile->ProjectileMovementComponent->ProjectileGravityScale = 0.3f;
 	Projectile->ProjectileMovementComponent->HomingAccelerationMagnitude = FMath::FRandRange(HomingAccelerationMagnitudeMin, HomingAccelerationMagnitudeMax);
 
 	Projectile->FinishSpawning(SpawnTransform);

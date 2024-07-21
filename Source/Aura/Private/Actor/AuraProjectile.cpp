@@ -51,6 +51,10 @@ void AAuraProjectile::Destroyed() {
 	if (bIsOverlap) {
 		OnOverlap();
 	}
+	if (LoopSoundComponent) {
+		LoopSoundComponent->Stop();
+		LoopSoundComponent->DestroyComponent();
+	}
 	Super::Destroyed();
 }
 
@@ -71,13 +75,15 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 void AAuraProjectile::OnOverlap() const {
 	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
-	if (LoopSoundComponent) {
-		LoopSoundComponent->Stop();
-		LoopSoundComponent->DestroyComponent();
+}
+
+void AAuraProjectile::OnDestroy(bool bNaturalDied) {
+	if (HasAuthority()) {
+		bIsOverlap = !bNaturalDied;
+		Destroy();
 	}
 }
 
 void AAuraProjectile::Multicast_OnDestroy_Implementation() {
-	bIsOverlap = true;
-	Destroy();
+	OnDestroy(false);
 }

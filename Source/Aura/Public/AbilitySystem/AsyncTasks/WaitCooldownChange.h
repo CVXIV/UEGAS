@@ -45,4 +45,6 @@ protected:
 	void CooldownTagChanged(const FGameplayTag InCooldownTag, int32 NewCount) const;
 
 	void OnActiveEffectAdded(UAbilitySystemComponent* AbilitySystemComponent, const struct FGameplayEffectSpec& GameplayEffectSpec, struct FActiveGameplayEffectHandle ActiveGameplayEffectHandle);
+
+	virtual void Activate() override;
 };

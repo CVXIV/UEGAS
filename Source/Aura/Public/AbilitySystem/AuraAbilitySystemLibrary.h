@@ -146,4 +146,6 @@ public:
 	static void SetDeBuffProperty(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, bool bInIsSuccessfulDeBuff, const FGameplayTag& InDeBuff, float InDamage, float InFrequency, float InDuration);
 
 	static float CalcRadialDamageWithFalloff(float BaseDamage, float DistanceFromEpicenter, float DamageInnerRadius, float DamageOuterRadius, float DamageFalloff);
+
+	static TArray<FRotator> EvenlySpacedRotators(const FVector& Forward, const FVector& Axis, float SpreadInDegree, int32 Nums);
 };
