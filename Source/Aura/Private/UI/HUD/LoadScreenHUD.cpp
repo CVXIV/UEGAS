@@ -16,5 +16,10 @@ void ALoadScreenHUD::BeginPlay() {
 	LoadScreenWidget = CreateWidget<ULoadScreenWidget>(GetWorld(), LoadScreenWidgetClass);
 	LoadScreenWidget->AddToViewport();
 
+	// 必须在蓝图初始化之后
 	LoadScreenWidget->BlueprintInitializeWidget();
+	LoadScreenViewModel->SetSelectedSlot(nullptr);
+	
+	GetOwningPlayerController()->SetShowMouseCursor(true);
+	LoadScreenViewModel->LoadAllSlotData();
 }
