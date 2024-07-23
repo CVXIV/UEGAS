@@ -4,6 +4,7 @@
 #include "Game/AuraGameModeBase.h"
 
 #include "Game/LoadScreenSaveGame.h"
+#include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/ViewModel/MVVM_LoadSlot.h"
 
@@ -39,4 +40,24 @@ ULoadScreenSaveGame* AAuraGameModeBase::GetSaveSlotData(const UMVVM_LoadSlot* Lo
 			UGameplayStatics::LoadGameFromSlot(LoadSlot->SlotName, LoadSlot->GetSlotIndex()));
 	}
 	return SaveGameObj;
+}
+
+AActor* AAuraGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
+{
+	TArray<AActor*> AllPlayerStart;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), AllPlayerStart);
+	if (AllPlayerStart.Num())
+	{
+		for (AActor* Actor : AllPlayerStart)
+		{
+			if (APlayerStart* PlayerStart = Cast<APlayerStart>(Actor))
+			{
+				if (PlayerStart->PlayerStartTag == FName("GAGA"))
+				{
+					return PlayerStart;
+				}
+			}
+		}
+	}
+	return nullptr;
 }

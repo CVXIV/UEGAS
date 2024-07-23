@@ -32,6 +32,8 @@ public:
 
 	static ULoadScreenSaveGame* GetSaveSlotData(const UMVVM_LoadSlot* LoadSlot);
 
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<USaveGame> LoadScreenSaveGameClass;
