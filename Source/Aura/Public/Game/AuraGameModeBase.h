@@ -6,7 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "AuraGameModeBase.generated.h"
 
-class ULoadScreenSaveGame;
+class UCustomSaveGame;
+
 class USaveGame;
 class UMVVM_LoadSlot;
 class UCharacterClassInfo;
@@ -26,11 +27,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Ability Info")
 	TObjectPtr<class UAuraDataAssetAbilityInfo> AbilityInfo;
 
-	void SaveSlotData(const UMVVM_LoadSlot* LoadSlot) const;
+	void SaveSlotData(const FString& SlotName) const;
 
-	static bool TryDeleteSlotData(const UMVVM_LoadSlot* LoadSlot);
+	bool TryDeleteSlotData(const FString& SlotName) const;
 
-	static ULoadScreenSaveGame* GetSaveSlotData(const UMVVM_LoadSlot* LoadSlot);
+	UCustomSaveGame* GetSaveSlotData(const UMVVM_LoadSlot* LoadSlot) const;
 
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 

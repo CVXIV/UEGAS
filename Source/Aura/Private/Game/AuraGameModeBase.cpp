@@ -3,57 +3,46 @@
 
 #include "Game/AuraGameModeBase.h"
 
+#include "EMSFunctionLibrary.h"
+#include "Game/CustomSaveGame.h"
 #include "Game/LoadScreenSaveGame.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/ViewModel/MVVM_LoadSlot.h"
 
-void AAuraGameModeBase::SaveSlotData(const UMVVM_LoadSlot* LoadSlot) const
-{
-	Async(EAsyncExecution::TaskGraph, [LoadSlot, this]()
-	{
-		TryDeleteSlotData(LoadSlot);
-		ULoadScreenSaveGame* SaveGameObj = Cast<ULoadScreenSaveGame>(
-			UGameplayStatics::CreateSaveGameObject(LoadScreenSaveGameClass));
-		SaveGameObj->PlayerName = LoadSlot->GetPlayerName();
-
-		UGameplayStatics::SaveGameToSlot(SaveGameObj, LoadSlot->SlotName, LoadSlot->GetSlotIndex());
+void AAuraGameModeBase::SaveSlotData(const FString& SlotName) const {
+	Async(EAsyncExecution::TaskGraph, [SlotName, this]() {
+		UCustomSaveGame* CustomSaveGame = Cast<UCustomSaveGame>(UGameplayStatics::CreateSaveGameObject(UCustomSaveGame::StaticClass()));
+		CustomSaveGame->SaveGameName = SlotName;
+		UEMSObject::Get(GetWorld())->SaveCustom(CustomSaveGame);
 	});
 }
 
-bool AAuraGameModeBase::TryDeleteSlotData(const UMVVM_LoadSlot* LoadSlot)
-{
-	bool bDeleted = false;
-	if (UGameplayStatics::DoesSaveGameExist(LoadSlot->SlotName, LoadSlot->GetSlotIndex()))
-	{
-		bDeleted = UGameplayStatics::DeleteGameInSlot(LoadSlot->SlotName, LoadSlot->GetSlotIndex());
+bool AAuraGameModeBase::TryDeleteSlotData(const FString& SlotName) const {
+	if (UEMSFunctionLibrary::DoesSaveSlotExist(GetWorld(), SlotName)) {
+		UCustomSaveGame* CustomSaveGame = Cast<UCustomSaveGame>(UGameplayStatics::CreateSaveGameObject(UCustomSaveGame::StaticClass()));
+		CustomSaveGame->SaveGameName = SlotName;
+		UEMSFunctionLibrary::DeleteCustomSave(GetWorld(), CustomSaveGame);
+		return true;
 	}
-	return bDeleted;
+	return false;
 }
 
-ULoadScreenSaveGame* AAuraGameModeBase::GetSaveSlotData(const UMVVM_LoadSlot* LoadSlot)
-{
-	ULoadScreenSaveGame* SaveGameObj = nullptr;
-	if (UGameplayStatics::DoesSaveGameExist(LoadSlot->SlotName, LoadSlot->GetSlotIndex()))
-	{
-		SaveGameObj = Cast<ULoadScreenSaveGame>(
-			UGameplayStatics::LoadGameFromSlot(LoadSlot->SlotName, LoadSlot->GetSlotIndex()));
+UCustomSaveGame* AAuraGameModeBase::GetSaveSlotData(const UMVVM_LoadSlot* LoadSlot) const {
+	UCustomSaveGame* SaveGameObj = nullptr;
+	if (UEMSFunctionLibrary::DoesSaveSlotExist(GetWorld(), LoadSlot->SlotName)) {
+		return Cast<UCustomSaveGame>(UEMSFunctionLibrary::GetCustomSave(GetWorld(), UCustomSaveGame::StaticClass()));
 	}
 	return SaveGameObj;
 }
 
-AActor* AAuraGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
-{
+AActor* AAuraGameModeBase::ChoosePlayerStart_Implementation(AController* Player) {
 	TArray<AActor*> AllPlayerStart;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), AllPlayerStart);
-	if (AllPlayerStart.Num() > 0)
-	{
-		for (AActor* Actor : AllPlayerStart)
-		{
-			if (APlayerStart* PlayerStart = Cast<APlayerStart>(Actor))
-			{
-				if (PlayerStart->PlayerStartTag == FName("GAGA"))
-				{
+	if (AllPlayerStart.Num() > 0) {
+		for (AActor* Actor : AllPlayerStart) {
+			if (APlayerStart* PlayerStart = Cast<APlayerStart>(Actor)) {
+				if (PlayerStart->PlayerStartTag == FName("GAGA")) {
 					return PlayerStart;
 				}
 			}

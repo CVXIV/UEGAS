@@ -16,7 +16,8 @@
 				"EnhancedInput",
 				"AIModule",
 				"Niagara",
-				"ModelViewViewModel"
+				"ModelViewViewModel",
+				"EasyMultiSave"
 			]
 		}
 	],
