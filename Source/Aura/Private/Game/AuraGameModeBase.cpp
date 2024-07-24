@@ -46,7 +46,7 @@ AActor* AAuraGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
 {
 	TArray<AActor*> AllPlayerStart;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), AllPlayerStart);
-	if (AllPlayerStart.Num())
+	if (AllPlayerStart.Num() > 0)
 	{
 		for (AActor* Actor : AllPlayerStart)
 		{
