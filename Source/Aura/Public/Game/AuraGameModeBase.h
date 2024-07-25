@@ -38,6 +38,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Ability Info")
 	TObjectPtr<class UAuraDataAssetAbilityInfo> AbilityInfo;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Loot Tiers")
+	TObjectPtr<class ULootTiers> LootTiers;
+
 	FSlotInfo SaveSlotData(const FString& SlotIndexName, const FString& SlotName) const;
 
 	bool TryDeleteSlotData(const FString& SlotIndexName) const;

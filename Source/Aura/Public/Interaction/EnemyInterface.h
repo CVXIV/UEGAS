@@ -32,4 +32,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	AActor* GetCombatTarget();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void SpawnLoot();
 };

@@ -6,6 +6,8 @@
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
+#include "AbilitySystem/Data/LootTiers.h"
+#include "Actor/AuraEffectActor.h"
 #include "AI/AuraAIController.h"
 #include "Aura/Aura.h"
 #include "BehaviorTree/BehaviorTree.h"
@@ -93,6 +95,25 @@ AActor* AAuraEnemy::GetCombatTarget_Implementation() {
 	return CombatTarget;
 }
 
+void AAuraEnemy::SpawnLoot_Implementation() {
+	if (const ULootTiers* LootTiers = UAuraAbilitySystemLibrary::GetLootTiers(GetWorld())) {
+		TArray<FLootItem> LootItems = LootTiers->GetLootItems();
+		TArray<FRotator> Rotators = UAuraAbilitySystemLibrary::EvenlySpacedRotators(GetActorForwardVector(), FVector::UpVector, 360.0f, LootItems.Num());
+		for (int i = 0; i < LootItems.Num(); ++i) {
+			FTransform LootTransform;
+			const FVector SpawnLocation = GetActorLocation() + FMath::RandRange(50, 150) * Rotators[i].Vector();
+			LootTransform.SetLocation(SpawnLocation);
+			const FRotator RandomRotation(0, FMath::RandRange(0, 360), 0);
+			LootTransform.SetRotation(RandomRotation.Quaternion());
+			AAuraEffectActor* EffectActor = GetWorld()->SpawnActorDeferred<AAuraEffectActor>(LootItems[i].LootClass, LootTransform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+			if (LootItems[i].bLootLevelOverride) {
+				EffectActor->SetLevel(Level);
+			}
+			EffectActor->FinishSpawning(LootTransform);
+		}
+	}
+}
+
 void AAuraEnemy::BeginPlay() {
 	Super::BeginPlay();
 
@@ -155,12 +176,12 @@ void AAuraEnemy::InitAbilityActorInfo() {
 	Super::InitAbilityActorInfo();
 	AuraAbilitySystemComponent->InitAbilityActorInfo(this, this);
 	AuraAbilitySystemComponent->AbilityActorInfoSet();
-	
+
 	AuraAbilitySystemComponent->RegisterGameplayTagEvent(FAuraGameplayTags::Get().DeBuff_Stun, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AAuraEnemy::StunTagChanged);
 	AuraAbilitySystemComponent->RegisterGameplayTagEvent(FAuraGameplayTags::Get().DeBuff_Burn, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AAuraEnemy::BurnTagChanged);
-	
+
 	OnAscRegistered.Broadcast(AuraAbilitySystemComponent);
-	
+
 	InitializeDefaultAttributes();
 }
 
@@ -169,6 +190,7 @@ void AAuraEnemy::OnDie() {
 	if (AuraAIController) {
 		AuraAIController->GetBlackboardComponent()->SetValueAsBool("Dead", true);
 	}
+	Execute_SpawnLoot(this);
 	Super::OnDie();
 }
 
@@ -180,7 +202,7 @@ void AAuraEnemy::StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount) 
 	Super::StunTagChanged(CallbackTag, NewCount);
 	if (AuraAIController) {
 		AuraAIController->GetBlackboardComponent()->SetValueAsBool("Stunned", NewCount > 0);
-	}	
+	}
 }
 
 void AAuraEnemy::Dissolve() {

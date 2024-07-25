@@ -28,6 +28,18 @@ const UAuraDataAssetAbilityInfo* UAuraAbilitySystemLibrary::GetAbilityInfo(const
 	return nullptr;
 }
 
+const ULootTiers* UAuraAbilitySystemLibrary::GetLootTiers(const UObject* WorldContext) {
+	if (const AAuraGameModeBase* AuraGameModeBase = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContext))) {
+		return AuraGameModeBase->LootTiers;
+	}
+
+	/*if (const AAuraCharacter* Character = Cast<AAuraCharacter>(WorldContext)) {
+		return Character->GetAbilityInfo();
+	}*/
+	UE_LOG(LogTemp, Error, TEXT("ULootTiers"))
+	return nullptr;
+}
+
 UOverlayWidgetController* UAuraAbilitySystemLibrary::GetOverlayWidgetController(const UObject* WorldContext) {
 	if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(WorldContext, 0)) {
 		if (AAuraHUD* AuraHUD = Cast<AAuraHUD>(PlayerController->GetHUD())) {

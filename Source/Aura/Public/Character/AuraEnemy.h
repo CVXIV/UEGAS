@@ -47,6 +47,8 @@ public:
 
 	virtual AActor* GetCombatTarget_Implementation() override;
 
+	virtual void SpawnLoot_Implementation() override;
+
 protected:
 	virtual void BeginPlay() override;
 

@@ -45,6 +45,10 @@ class AURA_API AAuraEffectActor : public AActor {
 public:
 	AAuraEffectActor();
 
+	void SetLevel(int Level) {
+		ActorLevel = Level;
+	}
+
 protected:
 	virtual void BeginPlay() override;
 
