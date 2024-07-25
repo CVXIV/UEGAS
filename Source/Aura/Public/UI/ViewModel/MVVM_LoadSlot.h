@@ -21,6 +21,10 @@ public:
 
 	void SetPlayerName(const FString& InPlayerName);
 
+	void SetFormatSlotCreateTime(const FString& InFormatSlotCreateTime);
+	
+	void SetSlotCreateTime(const FDateTime& DateTime);
+
 	int32 GetActiveIndex() const
 	{
 		return ActiveIndex;
@@ -44,8 +48,11 @@ public:
 	void InitializeSlot();
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, FieldNotify, Setter, Getter)
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter)
 	FString PlayerName;
+
+	UPROPERTY(BlueprintReadOnly, FieldNotify, Setter)
+	FString FormatSlotCreateTime;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, FieldNotify, Setter, Getter)
 	int32 ActiveIndex;

@@ -14,14 +14,11 @@ class AURA_API UCustomSaveGame : public UEMSCustomSaveGame {
 
 public:
 	UPROPERTY()
-	FString PlayerName;
-
+	FString SlotName;
+	
 	UPROPERTY()
 	int32 PlayerLevel = 0;
 
 	UPROPERTY()
-	FVector PlayerLocation;
-
-	UPROPERTY()
-	FRotator PlayerOrientation;
+	FTransform PlayerTransform;
 };

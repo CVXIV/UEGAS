@@ -6,15 +6,26 @@
 #include "GameFramework/GameModeBase.h"
 #include "AuraGameModeBase.generated.h"
 
-class UCustomSaveGame;
-
 class USaveGame;
 class UMVVM_LoadSlot;
 class UCharacterClassInfo;
 
-/**
- * 
- */
+struct FSlotInfo
+{
+	FSlotInfo()
+	{
+	}
+
+	FSlotInfo(const class UEMSInfoSaveGame* InInfoSaveGame, const class UCustomSaveGame* InCustomSaveGame)
+	{
+		InfoSaveGame = TObjectPtr(*InInfoSaveGame);
+		CustomSaveGame = TObjectPtr(*InCustomSaveGame);
+	}
+
+	TObjectPtr<const UEMSInfoSaveGame> InfoSaveGame;
+	TObjectPtr<const UCustomSaveGame> CustomSaveGame;
+};
+
 UCLASS()
 class AURA_API AAuraGameModeBase : public AGameModeBase
 {
@@ -27,11 +38,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Ability Info")
 	TObjectPtr<class UAuraDataAssetAbilityInfo> AbilityInfo;
 
-	void SaveSlotData(const FString& SlotName, const FString& PlayerName) const;
+	FSlotInfo SaveSlotData(const FString& SlotIndexName, const FString& SlotName) const;
 
-	bool TryDeleteSlotData(const FString& SlotName) const;
+	bool TryDeleteSlotData(const FString& SlotIndexName) const;
 
-	UCustomSaveGame* GetSaveSlotData(const UMVVM_LoadSlot* LoadSlot) const;
+	FSlotInfo GetSaveSlotData(const UMVVM_LoadSlot* LoadSlot) const;
 
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 

@@ -42,7 +42,9 @@ protected:
 	void DeleteButtonPressed();
 
 private:
-	void SetSlotStatusToTaken(int32 SlotIndex, const FString& EnteredName);
+	void SetSlotStatusToTaken(int32 SlotIndex, const FString& EnteredName, const FDateTime& DateTime);
+	
+	void SetSlotStatusToVacant(int32 SlotIndex);
 
 	UPROPERTY(BlueprintAssignable)
 	FOnLoadSlotSelectSignature OnLoadSlotSelect;
