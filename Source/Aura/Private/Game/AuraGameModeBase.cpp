@@ -10,18 +10,16 @@
 #include "Kismet/GameplayStatics.h"
 #include "UI/ViewModel/MVVM_LoadSlot.h"
 
-void AAuraGameModeBase::SaveSlotData(const FString& SlotName) const {
-	Async(EAsyncExecution::TaskGraph, [SlotName, this]() {
-		UCustomSaveGame* CustomSaveGame = Cast<UCustomSaveGame>(UGameplayStatics::CreateSaveGameObject(UCustomSaveGame::StaticClass()));
-		CustomSaveGame->SaveGameName = SlotName;
-		UEMSObject::Get(GetWorld())->SaveCustom(CustomSaveGame);
-	});
+void AAuraGameModeBase::SaveSlotData(const FString& SlotName, const FString& PlayerName) const {
+	UEMSFunctionLibrary::SetCurrentSaveGameName(GetWorld(), SlotName);
+	UCustomSaveGame* CustomSaveGame = Cast<UCustomSaveGame>(UEMSFunctionLibrary::GetCustomSave(GetWorld(), UCustomSaveGame::StaticClass()));
+	CustomSaveGame->PlayerName = PlayerName;
+	UEMSObject::Get(GetWorld())->SaveCustom(CustomSaveGame);
 }
 
 bool AAuraGameModeBase::TryDeleteSlotData(const FString& SlotName) const {
 	if (UEMSFunctionLibrary::DoesSaveSlotExist(GetWorld(), SlotName)) {
-		UCustomSaveGame* CustomSaveGame = Cast<UCustomSaveGame>(UGameplayStatics::CreateSaveGameObject(UCustomSaveGame::StaticClass()));
-		CustomSaveGame->SaveGameName = SlotName;
+		UCustomSaveGame* CustomSaveGame = Cast<UCustomSaveGame>(UEMSFunctionLibrary::GetCustomSave(GetWorld(), UCustomSaveGame::StaticClass()));
 		UEMSFunctionLibrary::DeleteCustomSave(GetWorld(), CustomSaveGame);
 		return true;
 	}

@@ -5,4 +5,5 @@
 
 UCustomSaveGame::UCustomSaveGame() {
 	bUseSaveSlot = true;
+	SaveGameName = FString("MyGameSave");
 }

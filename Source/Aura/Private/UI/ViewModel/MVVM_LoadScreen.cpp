@@ -27,7 +27,7 @@ void UMVVM_LoadScreen::NewSlotButtonPressed(int32 Slot, const FString& EnteredNa
 	if (!EnteredName.IsEmpty()) {
 		SetSlotStatusToTaken(Slot, EnteredName);
 		const AAuraGameModeBase* GameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
-		GameMode->SaveSlotData(LoadSlots[Slot]->SlotName);
+		GameMode->SaveSlotData(LoadSlots[Slot]->SlotName, EnteredName);
 	}
 }
 

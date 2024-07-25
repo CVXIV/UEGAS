@@ -27,7 +27,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Ability Info")
 	TObjectPtr<class UAuraDataAssetAbilityInfo> AbilityInfo;
 
-	void SaveSlotData(const FString& SlotName) const;
+	void SaveSlotData(const FString& SlotName, const FString& PlayerName) const;
 
 	bool TryDeleteSlotData(const FString& SlotName) const;
 
