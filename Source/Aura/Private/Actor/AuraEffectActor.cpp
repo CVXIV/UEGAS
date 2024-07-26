@@ -11,14 +11,37 @@ AAuraEffectActor::AAuraEffectActor() {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 
-	SetRootComponent(CreateDefaultSubobject<USceneComponent>("SceneRoot"));
+	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("StaticMeshComponent");
+	StaticMeshComponent->SetSimulatePhysics(false);
+	StaticMeshComponent->SetGenerateOverlapEvents(false);
+	StaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	StaticMeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	StaticMeshComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	SetRootComponent(StaticMeshComponent);
 }
 
-void AAuraEffectActor::BeginPlay() {
+void AAuraEffectActor::AddImpulse(const FVector& Impulse) {
+	StaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	StaticMeshComponent->SetSimulatePhysics(true);
+	StaticMeshComponent->AddImpulse(Impulse);
+}
+
+void AAuraEffectActor::BeginPlay()
+{
+	StaticMeshComponent->OnComponentHit.AddUniqueDynamic(this, &AAuraEffectActor::OnHit);
 	Super::BeginPlay();
 }
 
-bool AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, const TSubclassOf<UGameplayEffect> GameplayEffectClass) const {
+void AAuraEffectActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (OtherComp->GetCollisionObjectType() == ECC_WorldStatic)
+	{
+		StaticMeshComponent->SetSimulatePhysics(false);
+		StaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+bool AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, const TSubclassOf<UGameplayEffect>& GameplayEffectClass) const {
 	if (!IsValid(GameplayEffectClass)) {
 		return false;
 	}

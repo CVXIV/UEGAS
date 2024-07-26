@@ -49,10 +49,19 @@ public:
 		ActorLevel = Level;
 	}
 
+	UFUNCTION(BlueprintCallable)
+	void AddImpulse(const FVector& Impulse);
+
 protected:
 	virtual void BeginPlay() override;
+	
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> StaticMeshComponent;
 
-	bool ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass) const;
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	bool ApplyEffectToTarget(AActor* TargetActor, const TSubclassOf<UGameplayEffect>& GameplayEffectClass) const;
 
 	UFUNCTION(BlueprintCallable)
 	void OnOverlap(AActor* TargetActor);
