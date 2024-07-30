@@ -8,7 +8,7 @@
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 
 AAuraEffectActor::AAuraEffectActor() {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("StaticMeshComponent");
@@ -17,27 +17,39 @@ AAuraEffectActor::AAuraEffectActor() {
 	StaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	StaticMeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	StaticMeshComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	StaticMeshComponent->GetBodyInstance()->bLockXRotation = true;
+	StaticMeshComponent->GetBodyInstance()->bLockYRotation = true;
+	StaticMeshComponent->PrimaryComponentTick.bStartWithTickEnabled = false;
+	StaticMeshComponent->PrimaryComponentTick.bCanEverTick = false;
 	SetRootComponent(StaticMeshComponent);
 }
 
-void AAuraEffectActor::AddImpulse(const FVector& Impulse) {
+void AAuraEffectActor::AddImpulse(const FVector& Impulse) const {
 	StaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	StaticMeshComponent->SetSimulatePhysics(true);
 	StaticMeshComponent->AddImpulse(Impulse);
 }
 
-void AAuraEffectActor::BeginPlay()
-{
+void AAuraEffectActor::BeginPlay() {
 	StaticMeshComponent->OnComponentHit.AddUniqueDynamic(this, &AAuraEffectActor::OnHit);
 	Super::BeginPlay();
 }
 
-void AAuraEffectActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-	if (OtherComp->GetCollisionObjectType() == ECC_WorldStatic)
-	{
+void AAuraEffectActor::Tick(float DeltaSeconds) {
+	Super::Tick(DeltaSeconds);
+	if (bCanSin) {
+		const float NewZ = SinInitLocation.Z + FMath::Sin(2 * TotalSinTime) * SinAmplitude;
+		SetActorLocation(FVector(SinInitLocation.X, SinInitLocation.Y, NewZ));
+		TotalSinTime += DeltaSeconds;
+	}
+}
+
+void AAuraEffectActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) {
+	if (OtherComp->GetCollisionObjectType() == ECC_WorldStatic) {
 		StaticMeshComponent->SetSimulatePhysics(false);
 		StaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		SinInitLocation = GetActorLocation();
+		bCanSin = true;
 	}
 }
 

@@ -49,12 +49,13 @@ public:
 		ActorLevel = Level;
 	}
 
-	UFUNCTION(BlueprintCallable)
-	void AddImpulse(const FVector& Impulse);
+	void AddImpulse(const FVector& Impulse) const;
 
 protected:
 	virtual void BeginPlay() override;
-	
+
+	virtual void Tick(float DeltaSeconds) override;
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> StaticMeshComponent;
 
@@ -77,4 +78,12 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	bool bApplyEffectToEnemies;
+
+	float SinAmplitude = 15;
+
+	bool bCanSin = false;
+
+	FVector SinInitLocation;
+
+	float TotalSinTime = 0;
 };

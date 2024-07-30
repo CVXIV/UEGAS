@@ -101,8 +101,8 @@ void AAuraEnemy::SpawnLoot_Implementation() {
 		TArray<FRotator> Rotators = UAuraAbilitySystemLibrary::EvenlySpacedRotators(GetActorForwardVector(), FVector::UpVector, 360.0f, LootItems.Num());
 		for (int i = 0; i < LootItems.Num(); ++i) {
 			FTransform LootTransform;
-			const FVector SpawnLocation = GetActorLocation() + FMath::RandRange(50, 150) * Rotators[i].Vector();
-			LootTransform.SetLocation(SpawnLocation);
+			const FVector Direction = Rotators[i].Vector();
+			LootTransform.SetLocation(GetActorLocation());
 			const FRotator RandomRotation(0, FMath::RandRange(0, 360), 0);
 			LootTransform.SetRotation(RandomRotation.Quaternion());
 			AAuraEffectActor* EffectActor = GetWorld()->SpawnActorDeferred<AAuraEffectActor>(LootItems[i].LootClass, LootTransform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
@@ -110,6 +110,8 @@ void AAuraEnemy::SpawnLoot_Implementation() {
 				EffectActor->SetLevel(Level);
 			}
 			EffectActor->FinishSpawning(LootTransform);
+			const int32 RandomImpulse = FMath::RandRange(1000, 10000);
+			EffectActor->AddImpulse(FVector(Direction.X * RandomImpulse, Direction.Y * RandomImpulse, 35000));
 		}
 	}
 }
